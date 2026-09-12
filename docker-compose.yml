@@ -1,5 +1,6 @@
 services:
   fly:
+    profiles: ["recording"]
     build: .
     working_dir: /app
     volumes:
@@ -18,6 +19,62 @@ services:
       TF_NUM_INTEROP_THREADS: "1"
     gpus: all
     command: bash scripts/simulate_city.sh
+
+  neural-tools:
+    profiles: ["neural-tools"]
+    build:
+      context: .
+      dockerfile: Dockerfile.neural-tools
+    image: fly-neural-tools:0.1.0
+    working_dir: /app
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    volumes:
+      - .:/app:ro
+      - ./data/neural-reference:/data
+      - ./out/neural-reference:/out
+    environment:
+      MUJOCO_GL: disable
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 512m
+    cpus: 0.5
+    pids_limit: 32
+
+  environment-dev:
+    profiles: ["dev"]
+    build: .
+    image: fly-environment:0.1.0
+    working_dir: /app
+    command: python scripts/dev_environment.py --port 8089
+    volumes:
+      - .:/app:ro
+    ports:
+      - "127.0.0.1:8089:8089"
+    environment:
+      MUJOCO_GL: disable
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      FLY_DEV: "1"
+      FLY_NEURAL: "1"
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 1g
+    cpus: 2.0
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8089/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
 volumes:
   warp-cache:

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11191d">
+  <meta name="description" content="Observe a physical flybody fruit fly in the NETSPHERE. The development lab visualizes FlyWire neural response trials; body actuators remain disconnected.">
+  <title>NETSPHERE — Fly environment</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script>
+  <script type="module" src="/environment.js"></script>
+</head>
+<body>
+  <main id="observatory" aria-label="NETSPHERE observatory">
+    <canvas id="world" tabindex="0" aria-label="3D environment. Drag to look; W A S D to move; Q and E to move down and up."></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <header>
+      <a class="brand" href="/" aria-label="NETSPHERE, home">
+        <svg viewBox="0 0 32 36" aria-hidden="true"><path d="M2 9 16 1 30 9v18l-14 8L2 27ZM2 9l14 8 14-8M16 17v18M9 5v18l14 8M23 5v18L9 31"/></svg>
+        <span>NETSPHERE<small>FLY ENVIRONMENT / 001</small></span>
+      </a>
+      <div class="connection"><span id="connection-dot" class="dot"></span><span id="connection">Connecting</span></div>
+      <button id="fullscreen" class="icon-button" aria-label="Full screen" title="Full screen">⛶</button>
+    </header>
+
+    <section class="intro" aria-labelledby="view-title">
+      <span class="eyebrow">SECTOR 09 <span class="hairline"></span> OBSERVATORY</span>
+      <h1 id="view-title">South gallery</h1>
+      <p id="view-caption">Walkways, pillars and suspended cables.</p>
+      <div class="view-switcher" role="group" aria-label="Observation points">
+        <button data-view="fly" aria-pressed="false">Fly 001</button>
+        <button data-view="gallery" class="selected" aria-pressed="true"><span>01</span> Gallery</button>
+        <button data-view="shaft" aria-pressed="false"><span>02</span> Shaft</button>
+        <button data-view="lower" aria-pressed="false"><span>03</span> Walkway</button>
+      </div>
+    </section>
+
+    <aside class="map-panel" aria-label="Map and environment status">
+      <div class="panel-heading"><span>SECTOR PLAN</span><span class="north">N ↑</span></div>
+      <canvas id="minimap" width="420" height="310" aria-label="Top view of the sector and camera position"></canvas>
+      <div class="coordinates"><span id="coordinates">—</span><span>CM</span></div>
+      <div class="world-facts"><span>Physical geometries<strong id="geom-count">—</strong></span><span>Gravity<strong>9.81 m/s²</strong></span></div>
+      <button class="organism" data-view="fly" aria-pressed="false"><span class="hollow-dot"></span><span>Fly 001 · Physical body<small>Neural controller disconnected</small></span></button>
+    </aside>
+
+    <section id="gravity-panel" class="lab-panel" aria-label="Physics experiment">
+      <div><span class="eyebrow">ENVIRONMENT PHYSICS</span><h2>A real free fall.</h2></div>
+      <p>Drop a sphere above the walkway to observe gravity and collision.</p>
+      <button id="drop" class="primary" disabled><span aria-hidden="true">↓</span> Test gravity <span aria-hidden="true">↗</span></button>
+      <p id="probe-status" class="probe-status" role="status">Test sphere · 9 mm diameter</p>
+    </section>
+
+    <section id="fly-panel" class="lab-panel" aria-label="Selected fly" hidden>
+      <div><span class="eyebrow">SELECTED · FLY 001</span><h2>A body in the world.</h2></div>
+      <p>Anatomical flybody model.<br>Neural controller disconnected.</p>
+      <div class="specimen-facts"><span>Body state<strong id="fly-status">Settling</strong></span><span>Actuator drive<strong>Disabled</strong></span><span>Body mass<strong id="fly-mass">—</strong></span></div>
+      <button id="neural-open" class="primary neural-launch" aria-controls="neural-panel" aria-expanded="false" hidden>Neural activity <span aria-hidden="true">↗</span></button>
+      <p class="probe-status">Drag to orbit · Scroll to zoom</p>
+    </section>
+    <aside id="neural-panel" class="neural-panel" aria-labelledby="neural-title" hidden>
+      <div class="neural-heading">
+        <div><span class="eyebrow">CONNECTOME / REFERENCE LAB</span><h2 id="neural-title">Inside the signal.</h2></div>
+        <button id="neural-close" class="icon-button" aria-label="Close neural activity">×</button>
+      </div>
+      <p id="neural-status" role="status">Loading neural reference…</p>
+      <div id="neural-content">
+        <p id="neural-dataset" class="neural-source"></p>
+        <p id="neural-graph-size"></p>
+        <ol class="neural-workflow" aria-label="Neural signal workflow">
+          <li>Stimulus<small>Direct input</small></li>
+          <li id="workflow-brain">Connectome<small>LIF model</small></li>
+          <li id="workflow-readout">Readouts<small>Neural spikes</small></li>
+          <li class="disconnected">Muscles<small>Disconnected</small></li>
+        </ol>
+        <p class="neural-boundary">The flybody is passive. Sensory mapping from the world and motor coupling are still pending. These neural trials have their own clock.</p>
+        <h3>Antennal response</h3>
+        <p id="neural-protocol"></p>
+        <div class="neural-actions" role="group" aria-label="Neural trial">
+          <button data-neural-mode="stimulus">Stimulate antennal neurons</button>
+          <button data-neural-mode="baseline">Baseline · no input</button>
+          <button data-neural-mode="blocked">Block sensory output</button>
+        </div>
+        <progress id="neural-progress" max="150" value="0" aria-label="Neural trial progress"></progress>
+        <div class="neural-timing"><span id="neural-time">0 / 150 ms neural time</span><span id="neural-wall">Runs on demand</span></div>
+        <div class="neural-metrics">
+          <span><strong id="neural-spikes">—</strong>Total trial spikes</span>
+          <span><strong id="neural-downstream">—</strong>Beyond input neurons</span>
+          <span><strong id="neural-active">—</strong>Neurons that spiked</span>
+        </div>
+        <h3>Signal structure</h3>
+        <svg id="neural-graph" viewBox="0 0 430 294" role="img" aria-label="Selected FlyWire neurons and their directed connections. Node size and color show accumulated spikes.">
+          <defs>
+            <marker id="neural-arrow" viewBox="0 0 8 8" refX="12" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#98bbaa"/></marker>
+            <marker id="neural-stop" viewBox="0 0 8 8" refX="12" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M4 0V8" stroke="#d39e84" stroke-width="2"/></marker>
+          </defs>
+        </svg>
+        <div class="neural-legend"><span>→ Excitatory</span><span>⊣ Inhibitory</span></div>
+        <p id="neural-diagram-note"></p>
+        <h3>Measured activity</h3>
+        <canvas id="neural-timeline" width="420" height="146" role="img" aria-label="Spikes per 5 ms bin for sensory inputs, the downstream network and descending readouts. Each row uses its own scale."></canvas>
+        <p>Spikes per 5 ms bin · each row scaled separately. Dashed line: stimulus ends. Results remain visible after the trial.</p>
+        <table class="neural-readout-table">
+          <thead><tr><th scope="col">Readout</th><th scope="col">Trial spikes</th><th scope="col">Latest voltage</th></tr></thead>
+          <tbody id="neural-readouts"></tbody>
+        </table>
+        <p class="neural-footnote">Connectome-based simulation with a simplified neuron model. Numerical checks match Brian2; this does not establish biological equivalence or autonomous behavior. <a id="neural-provenance" target="_blank" rel="noopener noreferrer">Published model and data ↗</a></p>
+      </div>
+    </aside>
+    <button id="fly-marker" hidden aria-label="Select Fly 001">◎ <span>Fly 001</span></button>
+    <div id="crosshair" aria-hidden="true"></div>
+    <div id="toast" role="status" hidden></div>
+    <section id="loading" role="status"><span class="loader"></span><strong>Building the space</strong><span>Loading the City's physical geometry…</span></section>
+
+    <footer>
+      <div class="clock-controls">
+        <button id="pause" class="icon-button" aria-label="Pause simulation" title="Pause simulation" disabled>Ⅱ</button>
+        <div class="clock"><span>SIMULATION TIME</span><strong id="sim-time">00:00.00</strong></div>
+        <label class="speed-control"><span class="sr-only">Simulation speed</span><select id="speed" disabled><option value="1">1× real time</option><option value="0.25">0.25× slow motion</option></select></label>
+      </div>
+      <div class="navigation-help"><span><kbd>W A S D</kbd> move</span><span><kbd>Q E</kbd> height</span><span>Drag to look</span></div>
+      <div class="performance"><span id="fps">— FPS</span><span id="graphics-mode">30 FPS TARGET</span><span id="physical-rate">—</span></div>
+    </footer>
+    <div class="mobile-movement" role="group" aria-label="Move camera">
+      <button data-move="KeyW" aria-label="Move forward">↑</button><button data-move="KeyS" aria-label="Move backward">↓</button><button data-move="KeyQ" aria-label="Move down">−</button><button data-move="KeyE" aria-label="Move up">+</button>
+    </div>
+  </main>
+</body>
+</html>

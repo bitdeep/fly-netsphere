@@ -10,6 +10,7 @@ data/
 __pycache__/
 *.pyc
 .venv/
+node_modules/
 
 # Local notes and agent/session files (never published)
 *.local.md
