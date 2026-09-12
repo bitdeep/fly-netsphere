@@ -1,19 +1,23 @@
 # Experimental MN9-to-proboscis link
 
 The browser can now turn **simulated FlyWire motor-neuron spikes into a physical
-flybody joint response**. This first link uses sugar-responsive sensory neurons
+flybody joint response**. This first link uses published taste-sensory neurons
 and the MN9 motor pair. It drives only the rostrum, part of the proboscis.
 
-Open **http://localhost:8089 → Neural activity → Stimulate sugar neurons**.
-**View proboscis** focuses the observer on the head; drag to choose an angle.
-The panel retains measured MN9 spikes, adapter drive and joint angle after the
-movement. Compare **Baseline · no input** and **Block motor link**.
+Open **http://localhost:8089** and use **Feed**, **Water** or **Bitter** in the
+action bar. **Feed** stimulates sugar neurons: it models feeding initiation, not
+eating or digestion. **Focus** points the observer at the head; drag to choose
+an angle. **Neural activity** opens a transparent, read-only inspector retaining
+measured MN9 spikes, adapter drive and joint angle. Hover, focus or tap components
+and numbers for details; point along the graph to inspect 5 ms samples.
+The action bar stays available with the panel closed. Compare **Baseline** and
+**Block link** for the selected stimulus.
 New trials wait for the body to settle naturally. **Stop** cancels the trial;
 the footer pauses or slows both physical and neural time together.
 
 ```mermaid
 flowchart LR
-  S["21 sugar GRNs<br/>Direct input"] --> C["Full FlyWire 630 graph<br/>127,400 LIF neurons"]
+  S["Sugar / water / bitter GRNs<br/>Direct input"] --> C["Full FlyWire 630 graph<br/>127,400 LIF neurons"]
   C --> M["MN9 left and right<br/>Calculated spikes"]
   M --> A["Engineered adapter<br/>Filtered rate → servo target"]
   A --> B["Native flybody rostrum<br/>MuJoCo joint dynamics"]
@@ -22,18 +26,25 @@ flowchart LR
 This is an on-demand motor experiment. Input is delivered directly to identified
 neurons; no sugar object, taste receptor mechanics, world sensing or physical
 feedback into the brain is implemented. There is no autonomous walking/flight
-controller or complete ventral nerve cord. The antennal assay remains separately
-available and has no motor authority.
+controller or complete ventral nerve cord. **Wings** and **Walk** therefore remain
+visibly **Not connected**, with explanations and no command handler. **Antenna**
+runs the separate assay and has no motor authority.
 
 ## Biological source and engineering boundary
 
 The pinned [Shiu/Spiller notebook](https://github.com/philshiu/Drosophila_brain_model/blob/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/figures.ipynb)
-identifies 21 right labellar sugar GRNs (`neu_sugar`) and two MN9 neurons
-(`ids_mn9`). The runtime verifies that notebook's SHA-256 against the graph
+identifies 21 right labellar sugar GRNs (`neu_sugar`), 18 water GRNs (`neu_water`),
+21 bitter GRNs (`neu_bitter`) and two MN9 neurons (`ids_mn9`).
+The runtime verifies that notebook's SHA-256 against the graph
 manifest and extracts literal IDs without executing cells. The motor IDs are
 `720575940660219265` (left) and `720575940645521262` (right).
 The [neural reference guide](neural-reference.md) describes the entire retained
 graph, LIF equations, numerical agreement and source licenses.
+
+The sensory groups come from the model accompanying
+[Shiu et al., *A Drosophila computational brain model reveals sensorimotor processing*, Nature 2024](https://www.nature.com/articles/s41586-024-07763-9).
+Our **Bitter** preset stimulates bitter neurons alone. It does not reproduce the
+paper's combined sugar-plus-bitter inhibition experiment.
 
 MN9 innervates the rostrum protractor muscle, providing a documented motor
 association for this first link. Proboscis movement involves additional muscles
@@ -60,15 +71,17 @@ The waveform and gain are not calibrated against an animal's measured kinematics
 
 Each trial resets neural state and uses seed `20260912`, while preserving the
 body's integrated state and global physical clock. It lasts **500 ms**: 300 ms
-of 200 Hz input per sugar neuron, then 200 ms without input. The published IDs
+of 200 Hz input per selected sensory neuron, then 200 ms without input. The published IDs
 are reused; this specific finite-duration protocol is a local assay, not a claim
 to reproduce every published feeding experiment.
 
 | Trial | Neural input | Motor link |
 |---|---|---|
 | Sugar response | Fixed sugar events | MN9 drives the rostrum adapter |
+| Water response | Fixed water events | Same MN9-to-rostrum adapter |
+| Bitter response | Fixed bitter events | Same adapter; no MN9 spikes in this protocol |
 | Baseline | None | No spikes and no actuator drive |
-| Block motor link | Identical sugar events | Normal brain activity; actuation disabled |
+| Block link | Identical selected sensory events | Normal brain activity; actuation disabled |
 
 One neural step precedes one native physical step, both **0.1 ms**, on the same
 worker. A mismatch stops the trial. Pause freezes both clocks; paused time does
@@ -103,36 +116,52 @@ The comparison clones the same settled **test** state for each intervention usin
 MuJoCo's complete data copy. The live service never resets the fly for a trial.
 Checks cover unchanged state at start and before the first motor spike, shared
 clocks, native wake, excluded actuators, concurrent trial rejection, cancellation
-while paused, delta telemetry and failure on clock mismatch.
+while paused, delta telemetry and failure on clock mismatch. They also reject
+unsupported stimulus presets through the command interface and check that
+antennal cancellation allows a fresh trial.
 
 Measured on 2026-09-12:
 
 | Trial | MN9 left / right spikes | Downstream spikes | Peak rostrum movement | Other actuator force |
 |---|---:|---:|---:|---:|
 | No input | 0 / 0 | 0 | 0° | 0 |
-| Motor link blocked | 30 / 17 | 3,839 | 0° | 0 |
+| Sugar, link blocked | 30 / 17 | 3,839 | 0° | 0 |
 | Sugar response | 30 / 17 | 3,839 | 40.03° | 0 |
+| Water, link blocked | 14 / 7 | 1,293 | 0° | 0 |
+| Water response | 14 / 7 | 1,293 | 29.96° | 0 |
+| Bitter, link blocked | 0 / 0 | 677 | 0° | 0 |
+| Bitter response | 0 / 0 | 677 | 0° | 0 |
 
-The first motor force occurs at the first MN9 spike, **25.5 ms of simulated
-time**, not wall time. Both stimulated trials have 5,076 total spikes, including
-1,237 input spikes. Neural and physical clocks each advance 500 ms; all checks
+The first motor force occurs at the first MN9 spike: **25.5 ms for sugar** and
+**76.2 ms for water**, in simulated time. Sugar has 5,076 total spikes (1,237
+input); water has 2,348 (1,055 input); bitter has 1,914 (1,237 input). Blocking
+the motor link preserves each preset's neural counts while removing actuation.
+Neural and physical clocks each advance 500 ms; all checks
 complete without physics warnings. These establish a causal software-to-actuator
 path, not biological equivalence, real-time performance or autonomous behavior.
 
 The ignored `out/neural-reference/motor-validation.json` records code/cache
 hashes, protocol, counts, force, clock alignment, CPU/wall time and peak RSS.
-The isolated validation process peaked near 215 MiB RSS; the stimulated 500 ms
-run used about 2.3 CPU seconds. After the browser trials, a short resting-service
-sample showed 149.8 MiB and 8.43% of one CPU core. These are observations of
-specific workloads, not performance guarantees.
+The expanded validation process peaked near 231 MiB RSS; the sugar trial used
+about 2.2 CPU seconds and water about 1.9 CPU seconds. After closing the isolated
+browser, a resting-service sample showed 146.5 MiB and 7.82% of one CPU core.
+These are observations of specific workloads, not performance guarantees.
 
-Browser checks exercised all three modes, head focus, pause/resume with both
+Earlier browser checks exercised all three sugar modes, head focus, pause/resume with both
 clocks frozen, cancellation with drive off, and the retained antennal assay
 (2,906 total / 706 downstream spikes). The baseline and motor-blocked trials
-added no new 3D frames to the settled scene. Desktop and 390×844 mobile panels
-were inspected with no horizontal overflow. All 295 captured requests returned
-HTTP 200, with no JavaScript exceptions. Resizing the software-rendered viewport
-caused a graphics-context reset that recovered. This does not establish hardware
-FPS. The isolated browser was closed after validation.
+added no new 3D frames to the settled scene.
+
+The action-bar check exercised all four sensory presets, water with the motor
+link blocked while the panel was closed, and antennal Stop followed by a fresh
+trial. Water produced about 30° of movement; bitter produced 677 downstream
+spikes, no MN9 spikes, no movement and no additional scene frames. A later sugar
+trial moved about 39.5°: live joint excursions depend on the naturally settled
+starting pose. The fixed-state validation above is the reproducible comparison.
+Desktop and 390×844 mobile layouts had no horizontal overflow or panel/bar
+overlap. Pointer, click and keyboard-focus tooltips showed measured values, and
+Escape dismissed them. No JavaScript exceptions or failed requests were observed.
+Resizing the software-rendered viewport caused a graphics-context reset that
+recovered. This does not establish hardware FPS. The isolated browser was closed.
 
 The [browser guide](browser-environment.md) covers rendering limits and operation.

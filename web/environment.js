@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { createFly } from './fly.js';
+import { createActions } from './actions.js';
+import { setupTooltips } from './inspect.js';
 
 const $ = (selector) => document.querySelector(selector);
 const canvas = $('#world');
@@ -23,7 +25,7 @@ let needsRender = true, lastRender = 0, renderLimit = 30, pixelBudget = 1500000;
 let graphicsLost = false;
 let graphicsDevice = '', softwareGraphics = false, renderCostMs = 0;
 let cameraMovedSinceHud = false;
-let neuralPanel;
+let neuralPanel, actions;
 let fly, flyView = false, headView = false, orbitYaw = -.95, orbitPitch = .45, orbitDistance = .65;
 let scheduledFrame = 0, hudTimer = 0;
 const freeHelp = $('.navigation-help').innerHTML;
@@ -62,7 +64,7 @@ function setConnected(value) {
   $('#connection-dot').className = `dot ${value ? 'live' : 'offline'}`;
   $('#connection').textContent = value ? 'Environment connected' : 'Reconnecting…';
   for (const id of ['#drop', '#pause', '#speed']) $(id).disabled = !value;
-  neuralPanel?.setConnected(value);
+  actions?.setConnected(value);
 }
 
 async function command(payload) {
@@ -89,7 +91,8 @@ function updateState(next) {
   if (!next.neural || (state?.neural?.revision ?? -1) > next.neural.revision) next.neural = state?.neural;
   if (!next.motor || (state?.motor?.revision ?? -1) > next.motor.revision) next.motor = state?.motor;
   state = next;
-  neuralPanel?.update(next.neural, next.motor, next.paused, next.fly.sleeping);
+  neuralPanel?.update(next.neural, next.motor);
+  actions?.update(next);
   lastEvent = performance.now();
   setConnected(!next.error);
   if (next.error) {
@@ -636,7 +639,8 @@ async function start() {
     world = await response.json();
     if (world.neural) {
       const { createNeuralPanel } = await import('./neural.js');
-      neuralPanel = createNeuralPanel(world.neural, world.motor, command);
+      neuralPanel = createNeuralPanel(world.neural, world.motor, setupTooltips());
+      actions = createActions(world.neural, world.motor, command, (kind) => neuralPanel.select(kind));
     }
     await buildWorld();
     const [animal, initial] = await Promise.all([

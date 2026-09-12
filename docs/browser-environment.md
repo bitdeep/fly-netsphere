@@ -9,23 +9,39 @@ The three city view buttons return to known observation points. Touch screens ha
 movement buttons and support dragging to look.
 
 The animal settles passively and has **one experimental neural motor link**.
-Open **Neural activity → Stimulate sugar neurons** to route calculated MN9 spikes
-through an engineered adapter to the native rostrum servo. **View proboscis**
-focuses the observer on the head. Compare **Baseline · no input** and **Block motor
-link**; **Stop** removes actuator authority. New trials wait for physical rest,
+The separate action bar offers **Feed** (sugar), **Water**, **Bitter** and
+**Antenna**. Taste trials route calculated MN9 spikes through an engineered adapter
+to the native rostrum servo. Feed models feeding initiation, not eating or
+digestion; Water stimulates water-sensing neurons. Bitter alone produces neural
+activity without movement in this protocol. **Wings** and **Walk** are labeled
+**Not connected** and explain the missing motor circuitry.
+**Focus** points the observer at the head. Compare **Baseline** and **Block link**
+for the selected taste stimulus; **Stop** removes actuator authority.
+New motor trials wait for physical rest,
 and pause/resume affects both clocks. All other actuators remain disabled.
 Anatomical springs, joints, gravity and contact stay active. It does not walk or
 fly autonomously. [Motor protocol and causal validation](motor-link.md).
 
-The expandable **Antennal reference assay** retains a separate connectome assay:
+**Antenna** retains a separate connectome assay:
 antennal stimulus → FlyWire LIF dynamics → neural readouts → disconnected muscles.
 Its structure view shows a selection of actual connections with schematic positions;
 the entire published graph is retained in the simulation. Counts and voltages come
 from calculated activity, and the timeline groups measured spikes in 5 ms bins.
-The trial clock is separate from the physical clock. Physical contact, mouse
+Its **Block sensory** comparison blocks outgoing sensory connections; **Stop**
+cancels the assay without stopping the environment. The trial clock is separate
+from the physical clock. Physical contact, mouse
 movement and camera direction do not stimulate the brain yet.
 [Protocol, preparation and validation](neural-reference.md).
-Select it with **Fly 001**, the specimen card, or its marker when visible.
+
+**Neural activity** opens a transparent inspector with **Taste → body** and
+**Antenna** tabs. Actions remain outside it, available with the panel closed.
+Hover or focus components, numbers and traces for explanations and measured
+values; click/tap also opens inspector tooltips. Graph position selects the
+nearest 5 ms sample. Escape dismisses the tooltip. Short **Experimental link**
+and **Neural only** labels keep the coupling boundary visible.
+Transparency uses a flat alpha background without an additional blur pass.
+
+Select the animal with **Fly 001**, the specimen card, or its marker when visible.
 Selection and camera movement never command its muscles.
 The separate recorded-flight pipeline remains available.
 The amber sphere is an explicitly initialized gravity experiment, not an animal.
@@ -163,9 +179,11 @@ activating the `dev` profile cannot start a flight recording in the background.
 The server only serves an allowlist of frontend assets and read endpoints:
 `/api/world`, `/api/state`, `/api/events`, `/health`, plus `/api/dev-version` in
 development mode. `POST /api/command` accepts bounded drop, pause, speed,
-`neural_trial`, `motor_trial` and `motor_stop` commands with same-origin JSON.
+`neural_trial`, `neural_stop`, `motor_trial` and `motor_stop` commands with same-origin JSON.
 Trial mode must be `stimulus`, `baseline` or `blocked`; only one neural or motor
-trial runs at a time. Motor commands cannot select arbitrary neurons, actuator
+trial runs at a time. `motor_trial` optionally accepts `stimulus`: exactly
+`sugar`, `water` or `bitter`, defaulting to `sugar` for older clients.
+Motor commands cannot select arbitrary neurons, actuator
 names, gains, torques or durations. It cannot read
 arbitrary project files or edit the scene. At most eight event streams are open
 at once. The container has a read-only filesystem and limits of 2 CPUs, 1 GiB
@@ -173,6 +191,12 @@ RAM and 64 PIDs. These limits cover the backend; the browser is a separate proce
 The separate antennal worker has a duty budget of 0.15 core, runs only on request
 and publishes changes at up to 10 Hz. It adds no continuous scene render loop.
 This local server is not intended to be exposed directly to the internet.
+
+`web/actions.js` owns trial commands. `web/neural.js` and `web/motor.js` only
+inspect state; they draw changed data while their tab is visible.
+`web/inspect.js` manages one shared, event-driven tooltip, including the bounded
+sample lookup. Neither the inspector nor the action bar adds an idle animation
+loop, and unchanged control state causes no repeated DOM writes.
 
 ## Validation
 
@@ -202,6 +226,11 @@ baseline and blocked sensory output, verified their displayed counts, and
 inspected the panel on desktop and at 390×844 with no horizontal overflow.
 There were no JavaScript exceptions or failed requests; a software graphics
 context reset during viewport resizing recovered. The session was then closed.
+The subsequent action-bar round exercised all four stimuli, blocked water input's
+motor link with the inspector closed, and stopped/restarted an antennal trial.
+Desktop and mobile tooltips worked with pointer, click and keyboard focus.
+The mobile panel and action bar remained separate with no horizontal overflow.
+Detailed counts and causal comparisons are in the [motor guide](motor-link.md#validation).
 Page/process live-reload and 30 FPS on the user's hardware remain separate from
 those checks.
 

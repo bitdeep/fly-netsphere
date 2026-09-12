@@ -23,6 +23,7 @@ class NeuralLab:
     def __init__(self, stop, directory=CACHE):
         self.stop = stop
         self.lock = threading.Lock()
+        self.cancel = threading.Event()
         self.thread = None
         self.graph = None
         self.state = {"revision": 0, "status": "unavailable", "motor_connected": False}
@@ -72,6 +73,7 @@ class NeuralLab:
             if self.stop.is_set():
                 raise ValueError("The environment is stopping")
             trial = self.state["trial"]+1
+            self.cancel.clear()
             self.state = {
                 "revision": self.state["revision"]+1, "status": "running",
                 "motor_connected": False, "trial": trial, "mode": mode,
@@ -82,6 +84,9 @@ class NeuralLab:
             self.thread = threading.Thread(target=self._run, args=(mode,),
                                            name="neural-assay", daemon=True)
             self.thread.start()
+
+    def cancel_trial(self):
+        self.cancel.set()
 
     def _publish(self, values):
         with self.lock:
@@ -105,7 +110,7 @@ class NeuralLab:
             bins = np.zeros(3, dtype=np.int64)
             next_publish = 0.
             for first in range(0, TICKS, 25):
-                if self.stop.is_set():
+                if self.stop.is_set() or self.cancel.is_set():
                     self._publish({"status": "cancelled"})
                     return
                 for external in events[first:first+25]:
@@ -126,7 +131,7 @@ class NeuralLab:
                     raise RuntimeError("Trial stopped at its resource limit; results are incomplete.")
                 # Duty-cycle one worker; unused neurons and all graph files stay
                 # shared/read-only. No continuous assay runs while the UI is idle.
-                if self.stop.wait(max(0, cpu_used/CPU_BUDGET-wall_used)):
+                if self.cancel.wait(max(0, cpu_used/CPU_BUDGET-wall_used)) or self.stop.is_set():
                     self._publish({"status": "cancelled"})
                     return
                 now = time.monotonic()

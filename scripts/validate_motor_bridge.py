@@ -27,12 +27,15 @@ def validate():
     mujoco.mj_copyData(resting, model, data)
     other = np.arange(model.nu) != bridge.actuator
     results = {}
-    for mode in ("baseline", "blocked", "stimulus"):
+    cases = [("sugar", mode) for mode in ("baseline", "blocked", "stimulus")]
+    cases += [(taste, mode) for taste in ("water", "bitter") for mode in ("blocked", "stimulus")]
+    expected = {"sugar": ([30, 17], 5076), "water": ([14, 7], 2348), "bitter": ([0, 0], 1914)}
+    for taste, mode in cases:
         bridge.disable()
         mujoco.mj_copyData(data, model, resting)
         before = data.qpos.copy(), data.qvel.copy(), data.time
         started, cpu_started = time.monotonic(), time.thread_time()
-        env.command({"action": "motor_trial", "mode": mode})
+        env.command({"action": "motor_trial", "mode": mode, "stimulus": taste})
         np.testing.assert_array_equal(before[0], data.qpos)
         np.testing.assert_array_equal(before[1], data.qvel)
         assert before[2] == data.time
@@ -68,24 +71,35 @@ def validate():
         if mode == "baseline":
             assert counts == [0, 0] and result["total_spikes"] == 0
         else:
-            assert counts == [30, 17] and result["total_spikes"] == 5076
-        if mode != "stimulus":
+            assert (counts, result["total_spikes"]) == expected[taste]
+        assert result["stimulus"] == taste
+        if mode != "stimulus" or taste == "bitter":
             assert result["peak_force"] == 0 and result["peak_excursion_deg"] == 0
             np.testing.assert_array_equal(data.qpos, resting.qpos)
         else:
-            assert first_force_tick == first_motor_tick == 255
-            assert result["peak_excursion_deg"] > 10
+            assert first_force_tick == first_motor_tick and first_motor_tick is not None
+            if taste == "sugar":
+                assert first_motor_tick == 255
+            assert result["peak_excursion_deg"] > 5
             assert 0 < result["peak_force"] <= .1
             assert data.tree_asleep[env.fly_tree] < 0, "Sleeping animal did not wake"
-        results[mode] = {
+        key = mode if taste == "sugar" else f"{taste}_{mode}"
+        results[key] = {
             key: result[key] for key in ("total_spikes", "input_spikes", "downstream_spikes",
                                         "peak_force", "peak_excursion_deg", "physical_ms", "simulated_ms")
         }
-        results[mode].update(mn9_spikes=counts, other_actuator_peak_force=peak_other,
+        results[key].update(mn9_spikes=counts, other_actuator_peak_force=peak_other,
                              first_force_ms=None if first_force_tick is None else first_force_tick*PARAMETERS.dt_ms,
                              wall_seconds=time.monotonic()-started,
                              cpu_seconds=time.thread_time()-cpu_started)
-        print(mode, json.dumps(results[mode]), flush=True)
+        print(key, json.dumps(results[key]), flush=True)
+    # The public endpoint accepts only named presets, not arbitrary channels.
+    for stimulus in ("wing", "", [], {"neurons": [1]}):
+        try:
+            env.command({"action": "motor_trial", "mode": "stimulus", "stimulus": stimulus})
+            raise AssertionError("Unbounded sensory selector accepted")
+        except ValueError:
+            pass
     # Cancellation must remove actuator authority, including after it has fired.
     bridge.start("stimulus")
     for _ in range(400):
@@ -128,12 +142,21 @@ def validate():
         pass
     assert bridge.state["status"] == "error" and not bridge.active
     assert model.opt.disableflags & int(mujoco.mjtDisableBit.mjDSBL_ACTUATION)
+    env.command({"action": "neural_trial", "mode": "stimulus"})
+    env.command({"action": "neural_stop"})
+    env.neural.thread.join(timeout=5)
+    assert env.neural.snapshot()["status"] == "cancelled"
+    # A fresh trial must not inherit a cancelled predecessor's stop flag.
+    env.command({"action": "neural_trial", "mode": "baseline"})
+    env.neural.thread.join(timeout=10)
+    assert env.neural.snapshot()["status"] == "complete"
+    assert env.neural.snapshot()["total_spikes"] == 0
     env.stop.set()
     root = Path(__file__).resolve().parents[1]
     return {
         "schema": 1, "passed": True,
         "code_sha256": {name: sha256(root/"scripts"/name) for name in
-                        ("motor_bridge.py", "serve_environment.py", "neural_reference.py",
+                        ("motor_bridge.py", "serve_environment.py", "neural_reference.py", "neural_lab.py",
                          "validate_motor_bridge.py")},
         "cache_manifest_sha256": sha256(root/"out/neural-reference/manifest.json"),
         "protocol": bridge.descriptor, "results": results,
