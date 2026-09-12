@@ -11,7 +11,8 @@ The antennal assay described here has its own clock, starts from neural rest
 and does not drive the body. A separate [taste-response motor experiment](motor-link.md)
 now couples the same full graph's MN9 neurons to the flybody rostrum through an
 explicit engineered adapter, with a shared neural/physical clock.
-World-to-sensory mapping, broader muscle control, walking and flight remain
+The [object gallery](habitat.md) now supplies geometric mouth-contact input to
+that taste experiment. Broader sensory/muscle control, walking and flight remain
 future work; this is not a continuously embodied animal.
 
 ## Protocol and visible signals

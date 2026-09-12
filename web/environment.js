@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { createFly } from './fly.js';
 import { createActions } from './actions.js';
 import { setupTooltips } from './inspect.js';
+import { createHabitat } from './habitat.js';
 
 const $ = (selector) => document.querySelector(selector);
 const canvas = $('#world');
@@ -25,7 +26,7 @@ let needsRender = true, lastRender = 0, renderLimit = 30, pixelBudget = 1500000;
 let graphicsLost = false;
 let graphicsDevice = '', softwareGraphics = false, renderCostMs = 0;
 let cameraMovedSinceHud = false;
-let neuralPanel, actions;
+let neuralPanel, actions, habitat;
 let fly, flyView = false, headView = false, orbitYaw = -.95, orbitPitch = .45, orbitDistance = .65;
 let scheduledFrame = 0, hudTimer = 0;
 const freeHelp = $('.navigation-help').innerHTML;
@@ -65,6 +66,7 @@ function setConnected(value) {
   $('#connection').textContent = value ? 'Environment connected' : 'Reconnecting…';
   for (const id of ['#drop', '#pause', '#speed']) $(id).disabled = !value;
   actions?.setConnected(value);
+  habitat?.setConnected(value);
 }
 
 async function command(payload) {
@@ -90,9 +92,11 @@ function updateState(next) {
   if (!next.probe.trail) next.probe.trail = state?.probe.trail || [];
   if (!next.neural || (state?.neural?.revision ?? -1) > next.neural.revision) next.neural = state?.neural;
   if (!next.motor || (state?.motor?.revision ?? -1) > next.motor.revision) next.motor = state?.motor;
+  if (!next.habitat || (state?.habitat?.revision ?? -1) > next.habitat.revision) next.habitat = state?.habitat;
   state = next;
   neuralPanel?.update(next.neural, next.motor);
   actions?.update(next);
+  habitat?.update(next.habitat);
   lastEvent = performance.now();
   setConnected(!next.error);
   if (next.error) {
@@ -537,6 +541,18 @@ function bindControls() {
     orient();
   });
   const release = (event) => {
+    if (drag && drag.moved < 5 && habitat?.placing && event.type === 'pointerup') {
+      markerPoint.set(event.clientX / innerWidth * 2 - 1, 1 - event.clientY / innerHeight * 2);
+      raycaster.setFromCamera(markerPoint, camera);
+      raycaster.near = 0; raycaster.far = camera.far;
+      const hit = raycaster.intersectObjects(geometries.filter((mesh) => mesh.userData.physical.collision), false)[0];
+      if (hit) {
+        const normal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+        habitat.place(hit.point.addScaledVector(normal, world.habitat.radius_cm).toArray());
+      } else toast('Choose a surface near the fly.');
+      drag = null;
+      return;
+    }
     if (drag && drag.moved < 5 && !flyView && event.type === 'pointerup') {
       markerPoint.set(event.clientX / innerWidth * 2 - 1, 1 - event.clientY / innerHeight * 2);
       raycaster.setFromCamera(markerPoint, camera);
@@ -643,6 +659,8 @@ async function start() {
       actions = createActions(world.neural, world.motor, command, (kind) => neuralPanel.select(kind));
     }
     await buildWorld();
+    habitat = createHabitat(world.habitat, scene, command, invalidate,
+      () => $('#motor-focus').click());
     const [animal, initial] = await Promise.all([
       createFly(world.fly_body, scene),
       fetch('/api/state').then((r) => { if (!r.ok) throw new Error('Physics unavailable.'); return r.json(); }),

@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#11191d">
-  <meta name="description" content="Explore a physical fruit fly with sugar, water, bitter and antennal stimuli. A compact action bar and transparent neural inspector show measured FlyWire activity and an experimental proboscis motor link.">
+  <meta name="description" content="Offer taste objects to a physical fruit fly. Mouth contact gates a FlyWire neural response and an experimental proboscis motor link. Explore the object gallery, stimulus controls and measured neural activity.">
   <title>NETSPHERE — Fly environment</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/actions.css">
+  <link rel="stylesheet" href="/habitat.css">
   <script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script>
   <script type="module" src="/environment.js"></script>
 </head>
@@ -61,7 +62,7 @@
       </div>
     </section>
     <section id="fly-actions" class="action-bar" aria-label="Fly actions" hidden>
-      <div class="action-heading"><span>FLY 001</span><span id="action-status" role="status">Connecting…</span></div>
+      <div class="action-heading"><span>FLY 001</span><button id="habitat-open" aria-controls="habitat-panel" aria-expanded="false" data-tooltip="Place taste objects in the world, or offer one at the mouth. Contact can start a neural response.">◇ Objects</button><span id="action-status" role="status">Connecting…</span></div>
       <div class="action-presets" role="group" aria-label="Stimuli and behaviors">
         <button data-preset="sugar" aria-pressed="true" data-tooltip="Sugar sensory stimulus → full FlyWire graph → MN9 → proboscis. This models a feeding-initiation response, not eating or digestion."><span class="action-symbol" aria-hidden="true">♧</span>Feed<small>Proboscis</small></button>
         <button data-preset="water" aria-pressed="false" data-tooltip="Stimulate 18 published water-sensing neurons. The same MN9-to-rostrum adapter reads the resulting spikes."><span class="action-symbol" aria-hidden="true">◊</span>Water<small>Proboscis</small></button>
@@ -83,6 +84,25 @@
       </div>
       <div id="action-result" class="action-result" role="status" tabindex="0" data-tooltip="Measured result of the selected trial. Downstream spikes exclude the directly stimulated neurons. Movement is the largest measured proboscis joint-angle change.">Choose a stimulus to see its response.</div>
     </section>
+    <aside id="habitat-panel" class="habitat-panel" aria-labelledby="habitat-title" hidden>
+      <div class="habitat-heading"><div><span class="eyebrow">OBJECT GALLERY</span><h2 id="habitat-title">A world to taste.</h2></div><button id="habitat-close" class="icon-button" aria-label="Close object gallery">×</button></div>
+      <div class="habitat-kinds" role="group" aria-label="Object type">
+        <button data-object-kind="fruit" aria-pressed="true"><i style="background:#e8b56d" aria-hidden="true"></i>Fruit</button>
+        <button data-object-kind="water" aria-pressed="false"><i style="background:#80c7df" aria-hidden="true"></i>Water</button>
+        <button data-object-kind="bitter" aria-pressed="false"><i style="background:#b094ce" aria-hidden="true"></i>Bitter</button>
+        <button data-object-kind="neutral" aria-pressed="false"><i style="background:#adb9b2" aria-hidden="true"></i>Neutral</button>
+      </div>
+      <div class="habitat-controls">
+        <button id="habitat-offer" data-tooltip="Place the selected taste volume at the measured mouth position. Only the object is placed; the fly is not moved.">Offer at mouth</button>
+        <button id="habitat-place" aria-pressed="false" data-tooltip="Click a surface within 3 cm of the fly. These sources have taste only; the fly cannot smell or chase them yet.">Place in world</button>
+      </div>
+      <label class="habitat-senses" data-tooltip="Geometric mouth contact starts one bounded neural response per placed object. Contact is sampled every 5 ms and gates sensory input as the mouth moves. This is a contact reflex, not continuous brain autonomy."><input id="habitat-senses" type="checkbox">React to objects</label>
+      <div id="habitat-status" role="status"></div>
+      <span id="habitat-count" aria-label="Placed objects"></span>
+      <ul id="habitat-objects" aria-label="Placed objects"></ul>
+      <div class="habitat-boundary" tabindex="0" data-tooltip="Permeable, stationary taste volumes, not rigid fruit or fluid simulation. No smell, ingestion, learned preferences or autonomous locomotion. Each contact response starts from neural rest and lasts at most 500 ms.">Contact → brain → proboscis · Locomotion pending</div>
+    </aside>
+    <div id="placement-hint" role="status" hidden>Click a surface near the fly · Escape cancels</div>
     <aside id="neural-panel" class="neural-panel" aria-labelledby="neural-title" hidden>
       <div class="neural-heading">
         <div><span class="eyebrow">CONNECTOME</span><h2 id="neural-title">Neural activity</h2></div>
@@ -99,7 +119,7 @@
           <p id="motor-status" role="status">Loading motor link…</p>
           <div id="motor-controls">
             <ol class="neural-workflow" aria-label="Taste motor signal workflow">
-              <li id="motor-input" tabindex="0" data-tooltip="Direct input to identified sensory neurons. No taste-receptor mechanics or food object is simulated.">Sugar<small>21 inputs</small></li>
+              <li id="motor-input" tabindex="0" data-tooltip="Identified sensory neurons receive direct input from a preset or input gated by geometric mouth contact with a taste object. Receptor mechanics are not simulated.">Sugar<small>21 inputs</small></li>
               <li id="motor-workflow-brain" tabindex="0" data-tooltip="All 127,400 neurons and 14,687,178 stored connections remain in the LIF simulation.">Connectome<small>Full graph</small></li>
               <li id="motor-workflow-mn9" tabindex="0" data-tooltip="Measured spikes of the published left and right MN9 motor neurons.">MN9<small>Motor pair</small></li>
               <li id="motor-workflow-body" tabindex="0" data-tooltip="An engineered 30 ms firing-rate filter drives the existing rostrum servo. This mapping is not a biologically calibrated muscle model.">Rostrum<small>Adapter</small></li>
@@ -112,7 +132,7 @@
               <span tabindex="0" data-tooltip="Total spikes outside the directly stimulated sensory neurons."><strong id="motor-downstream">—</strong>Downstream</span>
             </div>
             <canvas id="motor-timeline" width="420" height="142" role="img" tabindex="0" data-tooltip="Hover along the trace to inspect 5 ms samples. MN9 is cumulative; drive is 0–1; angle is in degrees. Dashed line: input ends." aria-label="MN9 spikes, adapter drive and measured rostrum angle."></canvas>
-            <div class="neural-caption"><span class="neural-badge" tabindex="0" data-tooltip="One experimental motor link. World sensing, walking and flight are not connected.">Experimental link</span><span id="motor-drive" tabindex="0" data-tooltip="Current actuator authority. All actuators except the rostrum remain disabled.">Drive off</span></div>
+            <div class="neural-caption"><span class="neural-badge" tabindex="0" data-tooltip="Taste contact can gate one experimental motor link. Vision, smell, walking and flight are not connected.">Experimental link</span><span id="motor-drive" tabindex="0" data-tooltip="Current actuator authority. All actuators except the rostrum remain disabled.">Drive off</span></div>
           </div>
         </section>
         <section id="antenna-readout" role="tabpanel" aria-labelledby="antenna-tab" hidden>

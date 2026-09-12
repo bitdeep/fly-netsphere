@@ -9,8 +9,11 @@ actuator from simulated motor-neuron spikes. A separate action bar offers sugar,
 water, bitter and antennal stimuli, with baseline and blocked-link comparisons.
 A transparent inspector keeps measured signals visible and puts explanations in
 hover, focus and touch tooltips.
+An **object gallery** adds fruit, water, bitter and neutral taste volumes.
+Measured mouth contact can trigger and gate a neural response; removing a source
+cuts its future input. This is a bounded contact reflex, not autonomous foraging.
 [Open the development environment](#interactive-environment-in-the-browser)
-or read the [motor link and its limits](docs/motor-link.md).
+or read the [object gallery](docs/habitat.md) and [motor link](docs/motor-link.md).
 
 The animal is the anatomically detailed [flybody](https://github.com/TuragaLab/flybody) model of *Drosophila melanogaster* (Google DeepMind and HHMI Janelia, *Nature* 2025). In the separate recorded-flight pipeline, its pretrained controller runs on CUDA, MuJoCo Warp integrates the body and wing aerodynamics at 20 kHz, and a geometric navigator steers the fly through the collidable interior. Every frame of those recordings comes from the integrated physical state.
 
@@ -29,8 +32,9 @@ The full 60-second take, its metrics and the validation files are attached to th
 - It **is** a real 3D world: walls, pillars, ducts, cables and walkways with collision in the same MuJoCo model that integrates the fly. The camera moves through that space.
 - The **recorded flight** uses the official MLP policy. The browser development lab
   runs the published FlyWire 630 connectome and an experimental taste-response
-  motor link. Its firing-rate-to-servo adapter is engineered; world sensing,
-  neural walking and neural flight remain unimplemented.
+  motor link, including geometric taste contact with placed objects. Its
+  firing-rate-to-servo adapter is engineered; smell, vision, neural walking
+  and neural flight remain unimplemented.
 - The navigator is **not** learned vision. It reads the known world geometry and the measured position at 100 Hz and picks turns and climbs with clearance for wings and body. It only changes the reference command; it never writes the animal's pose or velocity.
 
 ## Results
@@ -92,6 +96,11 @@ walking or flight policy. The always-visible action bar offers **Feed** (sugar),
 rostrum. Feed models feeding initiation, not eating or digestion. Water activates
 water-sensing neurons; bitter alone produces neural activity without movement in
 this protocol. **Wings** and **Walk** are labeled **Not connected**.
+Open **Objects**, select an item and choose **Offer at mouth** to observe a
+contact response, or **Place in world** and click a nearby surface. Only mouth
+contact supplies taste: distant fruit does not attract the animal yet.
+Up to four objects share the existing scene. **React to objects** gates world
+input; each placement can evoke one bounded trial.
 Use **Focus** to inspect the head and **Neural activity** to open the transparent
 inspector. Hover, focus or tap its components and numbers for explanations;
 point along a graph to inspect measured samples. Actions work with the panel closed.
@@ -193,6 +202,8 @@ scripts/
   neural_reference.py  incremental LIF dynamics over the full FlyWire 630 graph
   neural_lab.py        bounded on-demand trials and measured activity telemetry
   motor_bridge.py      shared-clock taste → FlyWire → MN9 → native rostrum servo
+  habitat.py           four taste volumes, anatomical contact and gated sensory input
+  validate_habitat.py   contact, removal, neutral controls, isolation and object bounds
   validate_motor_bridge.py causal motor controls, actuator isolation and clock checks
   fetch_neural_reference.py, prepare_neural_reference.py, validate_neural_reference.py
   passive_fly.py       cached anatomy attachment and passive initialization
@@ -231,6 +242,12 @@ Dockerfile, docker-compose.yml, requirements.txt, requirements.lock
   in the bounded Docker environments described above.
 
 ## Roadmap
+
+The browser's next target is sensory-guided locomotion. The [embodiment roadmap](docs/embodied-roadmap.md)
+separates the working contact reflex from olfaction, continuous neural state,
+descending motor outputs and the missing walking/flight coordination layer.
+It compares published approaches without presenting a learned controller as
+reconstructed motor circuitry.
 
 Ideas after the validated minute, in order of preference: a vertical shaft crossing with cables and ducts at different heights; a controlled comparison of two runs where one passage is blocked; and an observatory mode that pauses the physical replay and shows speed, pitch, clearance and the navigator's decision at the same instant. Notes in [docs/netsphere-ideas.md](docs/netsphere-ideas.md), in Portuguese. The walking and vision policies of the same deposit are still TensorFlow SavedModels and have not been ported.
 

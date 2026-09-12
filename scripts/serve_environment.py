@@ -19,6 +19,7 @@ from PIL import Image
 from city_world import City
 from passive_fly import FLY_ID, attach_fly, describe_fly, initialize_fly
 from prepare_browser_fly import CACHE
+from habitat import Habitat, attach_objects
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,6 +49,7 @@ class Environment:
         body.add("geom", name="probe_sphere", type="sphere", size=[PROBE_RADIUS],
                  density=7.85, rgba=[1, .57, .19, 1], friction=[.8, .005, .0001],
                  solref=[.002, 1], priority=1, contype=1, conaffinity=1)
+        attach_objects(root)
         xml = root.to_xml_string()
         self.model = mujoco.MjModel.from_xml_string(xml, root.get_assets())
         # Start passive. A motor trial may enable only its allowlisted actuator.
@@ -56,6 +58,7 @@ class Environment:
         self.model.tree_sleep_policy[:] = mujoco.mjtSleepPolicy.mjSLEEP_ALLOWED
         self.data = mujoco.MjData(self.model)
         initialize_fly(self.model, self.data)
+        self.habitat = Habitat(self.model, self.data)
         self.fly_description, self.fly_body_ids = describe_fly(self.model, fly_manifest)
         self.fly_body_mask = np.zeros(self.model.nbody, dtype=bool)
         self.fly_body_mask[self.fly_body_ids] = True
@@ -141,7 +144,8 @@ class Environment:
                  for name in ("plane", "sphere", "capsule", "cylinder", "box")}
         geoms = []
         for i in range(model.ngeom):
-            if i == self.probe_geom or model.geom(i).name.startswith(FLY_ID+"/"):
+            if (i == self.probe_geom or model.geom(i).name.startswith(FLY_ID+"/")
+                    or i in self.habitat.geoms):
                 continue
             kind = types.get(int(model.geom_type[i]))
             if kind is None:
@@ -164,6 +168,7 @@ class Environment:
             "fly_body": self.fly_description,
             "neural": self.neural.descriptor if self.neural else None,
             "motor": self.motor.descriptor if self.motor else None,
+            "habitat": self.habitat.descriptor,
             "probe": {"radius": PROBE_RADIUS, "start": PROBE_START},
             "views": [
                 {"id": "gallery", "title": "South gallery", "position": [-50, -35, 16],
@@ -207,6 +212,13 @@ class Environment:
             elif action == "neural_stop" and set(command) == {"action"}:
                 if self.neural:
                     self.neural.cancel_trial()
+            elif action == "object_place" and set(command) in (
+                    {"action", "kind"}, {"action", "kind", "position"}):
+                self.habitat.place(command["kind"], command.get("position"))
+            elif action == "object_remove" and set(command) == {"action", "id"}:
+                self.habitat.remove(command["id"])
+            elif action == "reactive_senses" and set(command) == {"action", "enabled"}:
+                self.habitat.set_enabled(command["enabled"])
             elif action == "pause" and set(command) == {"action", "paused"}:
                 if not isinstance(command["paused"], bool):
                     raise ValueError("paused must be boolean")
@@ -256,7 +268,8 @@ class Environment:
             self.fly_contacts_seen = True
             self.fly_contact_count = count
 
-    def snapshot(self, pose_revision=None, trail_version=None, neural_revision=None, motor_revision=None):
+    def snapshot(self, pose_revision=None, trail_version=None, neural_revision=None,
+                 motor_revision=None, habitat_revision=None):
         with self.lock:
             state = {
                 "sequence": self.sequence, "time": float(self.data.time),
@@ -291,6 +304,9 @@ class Environment:
                 state["motor_running"] = self.motor.active
                 if motor_revision != motor["revision"]:
                     state["motor"] = motor
+            state["habitat_revision"] = self.habitat.revision
+            if habitat_revision != self.habitat.revision:
+                state["habitat"] = self.habitat.snapshot()
             return state
 
     def _run(self):
@@ -320,6 +336,15 @@ class Environment:
                                 mujoco.mj_step(self.model, self.data, nstep=block)
                             remaining -= block
                             self._sample_contacts()
+                            if (self.habitat.enabled and self.habitat.objects
+                                    and self.data.time >= self.habitat.next_sample):
+                                was_running = bool(self.motor and self.motor.active)
+                                self.habitat.sample(
+                                    self.motor,
+                                    bool(self.neural and self.neural.snapshot()["status"] == "running"),
+                                    bool(self.data.tree_asleep[self.fly_tree] >= 0))
+                                if not was_running and self.motor and self.motor.active:
+                                    self.next_pose_time = 0.
                             if self.probe_active and len(self.probe_trail) < 500:
                                 p = self.data.xpos[self.probe_id]
                                 if np.linalg.norm(p-self.probe_trail[-1]) > .15:
@@ -421,9 +446,10 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "text/event-stream")
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()
-                pose_revision = trail_version = neural_revision = motor_revision = None
+                pose_revision = trail_version = neural_revision = motor_revision = habitat_revision = None
                 while not env.stop.is_set():
-                    state = env.snapshot(pose_revision, trail_version, neural_revision, motor_revision)
+                    state = env.snapshot(pose_revision, trail_version, neural_revision,
+                                         motor_revision, habitat_revision)
                     payload = json.dumps(state, separators=(",", ":"))
                     self.wfile.write(f"data: {payload}\n\n".encode())
                     self.wfile.flush()
@@ -431,6 +457,7 @@ class Handler(BaseHTTPRequestHandler):
                     trail_version = (state["probe"]["generation"], state["probe"]["trail_count"])
                     neural_revision = state.get("neural_revision")
                     motor_revision = state.get("motor_revision")
+                    habitat_revision = state["habitat_revision"]
                     active = not state["fly"]["sleeping"] or (state["probe"]["active"] and not state["probe"]["contact_seen"])
                     interval = POSE_INTERVAL if active and not state["paused"] else 1
                     running = state.get("neural_running") or (state.get("motor_running") and not state["paused"])
@@ -467,6 +494,8 @@ class Handler(BaseHTTPRequestHandler):
             "/motor.js": ("web/motor.js", "text/javascript; charset=utf-8"),
             "/actions.js": ("web/actions.js", "text/javascript; charset=utf-8"),
             "/inspect.js": ("web/inspect.js", "text/javascript; charset=utf-8"),
+            "/habitat.js": ("web/habitat.js", "text/javascript; charset=utf-8"),
+            "/habitat.css": ("web/habitat.css", "text/css; charset=utf-8"),
             "/actions.css": ("web/actions.css", "text/css; charset=utf-8"),
             "/neural.css": ("web/neural.css", "text/css; charset=utf-8"),
             "/dev-reload.js": ("web/dev-reload.js", "text/javascript; charset=utf-8"),

@@ -22,6 +22,16 @@ and pause/resume affects both clocks. All other actuators remain disabled.
 Anatomical springs, joints, gravity and contact stay active. It does not walk or
 fly autonomously. [Motor protocol and causal validation](motor-link.md).
 
+**Objects** opens a gallery of fruit, water, bitter and neutral taste volumes.
+Choose **Offer at mouth**, or **Place in world** followed by a surface click near
+the fly. Geometric mouth contact gates the selected sensory neurons, sampled
+every 5 ms during a response. **React to objects** disables this input; remove
+objects individually. Each placement can evoke one 500 ms rest-start neural
+trial after the body settles. There is no attraction to distant fruit or
+continuous autonomous brain state yet. These stationary, permeable taste cues
+do not apply forces or model solid food, digestion or odor.
+[Gallery controls, encoding and checks](habitat.md).
+
 **Antenna** retains a separate connectome assay:
 antennal stimulus → FlyWire LIF dynamics → neural readouts → disconnected muscles.
 Its structure view shows a selection of actual connections with schematic positions;
@@ -29,8 +39,8 @@ the entire published graph is retained in the simulation. Counts and voltages co
 from calculated activity, and the timeline groups measured spikes in 5 ms bins.
 Its **Block sensory** comparison blocks outgoing sensory connections; **Stop**
 cancels the assay without stopping the environment. The trial clock is separate
-from the physical clock. Physical contact, mouse
-movement and camera direction do not stimulate the brain yet.
+from the physical clock. Antennal touch, mouse movement and camera direction
+do not stimulate this assay. Taste-object contact uses the separate motor link.
 [Protocol, preparation and validation](neural-reference.md).
 
 **Neural activity** opens a transparent inspector with **Taste → body** and
@@ -184,13 +194,17 @@ activating the `dev` profile cannot start a flight recording in the background.
 The server only serves an allowlist of frontend assets and read endpoints:
 `/api/world`, `/api/state`, `/api/events`, `/health`, plus `/api/dev-version` in
 development mode. `POST /api/command` accepts bounded drop, pause, speed,
-`neural_trial`, `neural_stop`, `motor_trial` and `motor_stop` commands with same-origin JSON.
+`neural_trial`, `neural_stop`, `motor_trial`, `motor_stop`, `object_place`,
+`object_remove` and `reactive_senses` commands with same-origin JSON.
 Trial mode must be `stimulus`, `baseline` or `blocked`; only one neural or motor
 trial runs at a time. `motor_trial` optionally accepts `stimulus`: exactly
 `sugar`, `water` or `bitter`, defaulting to `sugar` for older clients.
 Motor commands cannot select arbitrary neurons, actuator
 names, gains, torques or durations. It cannot read
-arbitrary project files or edit the scene. At most eight event streams are open
+arbitrary project files or edit anatomical/world geometry. Object commands expose
+only four named taste presets, four slots and finite positions within 3 cm of
+the fly; they do not accept arbitrary neural or motor parameters.
+At most eight event streams are open
 at once. The container has a read-only filesystem and limits of 2 CPUs, 1 GiB
 RAM and 64 PIDs. These limits cover the backend; the browser is a separate process.
 The separate antennal worker has a duty budget of 0.15 core, runs only on request
@@ -202,6 +216,11 @@ inspect state; they draw changed data while their tab is visible.
 `web/inspect.js` manages one shared, event-driven tooltip, including the bounded
 sample lookup. Neither the inspector nor the action bar adds an idle animation
 loop, and unchanged control state causes no repeated DOM writes.
+`web/habitat.js` shares one small sphere geometry across four preallocated
+meshes, with no shadow pass or animation loop. Object lists are sent by revision,
+and the scene redraws only when their visible geometry changes. Contact sensing
+runs on physical time in the same worker; it stops once all placed sources
+have evoked their one allowed response.
 
 ## Validation
 
@@ -249,6 +268,9 @@ exceptions or non-200 requests were observed in that audit; the software graphic
 context recovered after resizing. The test browser was closed.
 Page/process live-reload and 30 FPS on the user's hardware remain separate from
 those checks.
+The subsequent [gallery checks](habitat.md#resource-bounds-and-verification)
+exercised object placement/contact/removal, all manual comparisons, both Stop
+paths and mobile panel behavior, and measured resting resource usage.
 
 Resource efficiency is an acceptance requirement. Keep the one-animal default
 and existing container ceilings; measure CPU, RAM and browser rendering before

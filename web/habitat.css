@@ -1,0 +1,22 @@
+.habitat-panel{position:absolute;left:24px;top:125px;z-index:6;width:min(310px,calc(100vw - 24px));max-height:calc(100vh - 450px);overflow:auto;padding:17px;border:1px solid #bdd5cc55;border-radius:8px;background:#102027;color:#dae8df}
+.habitat-heading{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.habitat-heading h2{font-size:20px;font-weight:400;margin:5px 0}
+.habitat-heading .icon-button{font-size:20px}
+.habitat-kinds{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:16px 0}
+.habitat-kinds button{border:1px solid var(--line);border-radius:4px;padding:9px 3px;font-size:10px;background:#b8d6c309}
+.habitat-kinds button[aria-pressed=true]{background:#b8d6c31e;border-color:#b8d6c380}
+.habitat-kinds i{display:block;width:13px;height:13px;border-radius:50%;margin:0 auto 8px}
+.habitat-controls{display:flex;gap:5px}
+.habitat-controls button{flex:1;background:#b8d6c317;padding:9px 5px;border:1px solid var(--line);border-radius:4px;font-size:10px}
+.habitat-senses{display:flex;align-items:center;gap:8px;font-size:11px;margin:15px 0}
+.habitat-senses input{accent-color:#b8d6c3}
+#habitat-status{font:10px/1.7 monospace;color:#b9cfc5;min-height:34px}
+#habitat-objects{list-style:none;padding:0;font-size:10px}
+#habitat-objects li{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding:6px 0}
+#habitat-objects button{padding:5px 8px;border:1px solid var(--line);border-radius:4px}
+.habitat-boundary{font-size:9px;line-height:1.6;color:#c7bf9f}
+#habitat-count{font:10px monospace;color:#aec4b9}
+.placing-object{cursor:crosshair!important}
+#placement-hint{position:absolute;top:100px;left:50%;transform:translateX(-50%);z-index:7;pointer-events:none;padding:9px 12px;background:#102027e8;border:1px solid var(--line);border-radius:5px;font:11px monospace;text-align:center;max-width:90vw}
+@media(max-width:700px){.habitat-panel{top:90px;left:12px;width:calc(100vw - 24px);max-height:calc(100vh - 403px)}#placement-hint{top:80px;font-size:10px;width:calc(100vw - 24px)}}
+@media(max-height:650px) and (min-width:701px){.habitat-panel{top:90px;max-height:calc(100vh - 396px)}}
