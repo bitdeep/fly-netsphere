@@ -65,6 +65,7 @@ class MotorBridge:
         self.fly_tree = fly_tree
         self.neurons = None
         self.events = None
+        self.sensory_gate = None
         self.state = {"revision": 0, "status": "unavailable", "drive_enabled": False}
         self.descriptor = {"available": False}
         self.actuator = None
@@ -122,7 +123,7 @@ class MotorBridge:
             self.data.qfrc_applied[self.dof] = 0.
         self.model.tree_sleep_policy[self.fly_tree] = mujoco.mjtSleepPolicy.mjSLEEP_ALLOWED
 
-    def start(self, mode, stimulus="sugar"):
+    def start(self, mode, stimulus="sugar", *, sensory_gate=None, source=None):
         if not isinstance(mode, str) or mode not in MODES:
             raise ValueError("Motor mode must be stimulus, baseline or blocked")
         if not isinstance(stimulus, str) or stimulus not in STIMULI:
@@ -133,6 +134,8 @@ class MotorBridge:
             raise ValueError("A motor trial is already running")
         self.disable()
         self.mode = mode
+        self.sensory_gate = sensory_gate
+        self.input_open = True
         self.inputs = self.input_groups[stimulus]
         self.sensory[:] = False
         self.sensory[self.inputs] = True
@@ -150,6 +153,7 @@ class MotorBridge:
         self.history = []
         self.state = {"revision": self.state["revision"]+1, "status": "running",
                       "trial": self.state["trial"]+1, "mode": mode, "stimulus": stimulus,
+                      "source": source, "sensory_contact": None,
                       "input_count": len(self.inputs), "drive_enabled": False,
                       "history": [], "readouts": [], "simulated_ms": 0, "physical_ms": 0,
                       "total_spikes": 0, "downstream_spikes": 0,
@@ -181,6 +185,7 @@ class MotorBridge:
                           "voltage_mv": float(neurons.v[item["index"]])}
                          for item in self.readouts],
             "activation": self.activation if status == "running" else 0.,
+            "sensory_contact": self.input_open if self.sensory_gate else None,
             "angle_deg": float(np.degrees(self.data.qpos[self.qpos])),
             "peak_excursion_deg": self.peak_excursion, "peak_force": self.peak_force,
             "history": list(self.history),
@@ -194,13 +199,17 @@ class MotorBridge:
             self._publish(status, error)
         # Keep only the small measured history. Release trial state at idle.
         self.neurons = self.events = None
+        self.sensory_gate = None
 
     def step(self):
         if not self.active:
             raise RuntimeError("No active motor trial")
         cpu_started = time.thread_time()
         try:
-            spikes = self.neurons.step(self.events[self.neurons.tick])
+            if self.sensory_gate and self.neurons.tick % 50 == 0:
+                self.input_open = self.sensory_gate()
+            external = self.events[self.neurons.tick]
+            spikes = self.neurons.step(external if self.input_open else external[:0])
             self.total += len(spikes)
             self.input_total += int(np.count_nonzero(self.sensory[spikes]))
             motor_total = sum(int(self.neurons.spike_counts[i]) for i in self.motor_indices)
@@ -229,6 +238,7 @@ class MotorBridge:
                     "ms": self.neurons.tick*PARAMETERS.dt_ms, "angle_deg": angle,
                     "drive": self.activation if self.mode == "stimulus" else 0.,
                     "mn9_spikes": int(self.neurons.spike_counts[self.motor_indices].sum()),
+                    "sensory_contact": self.input_open if self.sensory_gate else None,
                 })
             self.cpu_seconds += time.thread_time()-cpu_started
             if self.neurons.tick % 25 == 0:

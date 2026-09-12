@@ -23,7 +23,7 @@ export function createActions(neural, motor, command, selectReadout) {
     const key = [selected, pending, current, trial?.revision, state?.paused, connected].join('|');
     if (key === renderedResult) return;
     renderedResult = key;
-    const label = names[selected];
+    const label = current && trial?.source ? trial.source.label : names[selected];
     let result;
     if (pending) result = pending === 'stop' ? 'Stopping the trial…' : `Starting ${label}…`;
     else if (!connected) result = 'Disconnected · waiting for the environment.';
@@ -103,12 +103,16 @@ export function createActions(neural, motor, command, selectReadout) {
   return {
     update(next) {
       state = next;
-      if (next.motor_running && next.motor.trial !== seenMotor) {
-        seenMotor = next.motor.trial;
+      const newMotor = next.motor?.trial && next.motor.trial !== seenMotor;
+      const newNeural = next.neural?.trial && next.neural.trial !== seenNeural;
+      seenMotor = next.motor?.trial || 0;
+      seenNeural = next.neural?.trial || 0;
+      // A contact-only neural response can finish between idle SSE updates.
+      // Retain its result even when no "running" packet reached this viewer.
+      if (newMotor && !next.neural_running) {
         selected = next.motor.stimulus || 'sugar';
         selectReadout('motor');
-      } else if (next.neural_running && next.neural.trial !== seenNeural) {
-        seenNeural = next.neural.trial;
+      } else if (newNeural) {
         selected = 'antenna';
         selectReadout('antenna');
       }

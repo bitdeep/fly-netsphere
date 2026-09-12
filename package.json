@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@11.24.0",
   "scripts": {
-    "check": "node --check web/environment.js && node --check web/fly.js && node --check web/neural.js && node --check web/motor.js && node --check web/actions.js && node --check web/inspect.js && node --check web/dev-reload.js"
+    "check": "node --check web/environment.js && node --check web/fly.js && node --check web/neural.js && node --check web/motor.js && node --check web/actions.js && node --check web/inspect.js && node --check web/habitat.js && node --check web/dev-reload.js"
   },
   "dependencies": {
     "three": "0.180.0"

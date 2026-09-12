@@ -17,15 +17,21 @@ the footer pauses or slows both physical and neural time together.
 
 ```mermaid
 flowchart LR
+  O["Placed taste volume"] --> G["Measured mouth overlap<br/>5 ms contact gate"]
+  G --> S
   S["Sugar / water / bitter GRNs<br/>Direct input"] --> C["Full FlyWire 630 graph<br/>127,400 LIF neurons"]
   C --> M["MN9 left and right<br/>Calculated spikes"]
   M --> A["Engineered adapter<br/>Filtered rate → servo target"]
   A --> B["Native flybody rostrum<br/>MuJoCo joint dynamics"]
+  B --> G
 ```
 
-This is an on-demand motor experiment. Input is delivered directly to identified
-neurons; no sugar object, taste receptor mechanics, world sensing or physical
-feedback into the brain is implemented. There is no autonomous walking/flight
+The action-bar presets remain direct-input motor experiments. The
+[object gallery](habitat.md) additionally gates those inputs by measured mouth
+overlap with a stationary taste volume. Mouth motion and source removal feed
+back into that gate during a bounded response. Taste-receptor mechanics are
+not reconstructed. Each trial still starts from neural rest and ends at 500 ms;
+the brain does not run continuously. There is no autonomous walking/flight
 controller or complete ventral nerve cord. **Wings** and **Walk** therefore remain
 visibly **Not connected**, with explanations and no command handler. **Antenna**
 runs the separate assay and has no motor authority.
@@ -82,6 +88,7 @@ to reproduce every published feeding experiment.
 | Bitter response | Fixed bitter events | Same adapter; no MN9 spikes in this protocol |
 | Baseline | None | No spikes and no actuator drive |
 | Block link | Identical selected sensory events | Normal brain activity; actuation disabled |
+| World contact | Selected events gated by mouth overlap | Same MN9 adapter; one response per placement |
 
 One neural step precedes one native physical step, both **0.1 ms**, on the same
 worker. A mismatch stops the trial. Pause freezes both clocks; paused time does

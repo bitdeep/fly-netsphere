@@ -12,7 +12,7 @@ export function createMotorPanel(descriptor, tooltips) {
   $('fly-controller').dataset.tooltip = 'Anatomical flybody with one experimental MN9 → rostrum motor link. Walking and flight are not connected.';
   $('organism-controller').textContent = 'One neural motor link available';
   sampleTooltip($('motor-timeline'), () => state?.history,
-    (sample) => `${sample.ms} ms brain / body\nMN9: ${sample.mn9_spikes} cumulative spikes\nDrive: ${sample.drive.toFixed(3)} / 1\nRostrum angle: ${sample.angle_deg.toFixed(2)}°`,
+    (sample) => `${sample.ms} ms brain / body\nMN9: ${sample.mn9_spikes} cumulative spikes\nDrive: ${sample.drive.toFixed(3)} / 1\nRostrum angle: ${sample.angle_deg.toFixed(2)}°${sample.sensory_contact == null ? '' : `\nTaste contact: ${sample.sensory_contact ? 'yes' : 'no'}${sample.ms > descriptor.stimulus_ms ? ' · recovery, input off' : ''}`}`,
     tooltips.refresh, descriptor.total_ms);
 
   function drawHistory(history) {
@@ -56,9 +56,9 @@ export function createMotorPanel(descriptor, tooltips) {
     const names = { stimulus: label, baseline: `${label} baseline`, blocked: `${label} · motor blocked` };
     $('motor-input').firstChild.textContent = label;
     $('motor-input').querySelector('small').textContent = `${state.input_count || descriptor.input_count} inputs`;
-    $('motor-input').dataset.tooltip = `${state.input_count || descriptor.input_count} identified ${taste} sensory neurons. ${descriptor.rate_hz} Hz for ${descriptor.stimulus_ms} ms, followed by 200 ms recovery. Each trial starts from neural rest with the same seed.`;
+    $('motor-input').dataset.tooltip = `${state.input_count || descriptor.input_count} identified ${taste} sensory neurons. ${state.source ? `${state.source.label}: mouth contact gates` : 'Direct input at'} ${descriptor.rate_hz} Hz for up to ${descriptor.stimulus_ms} ms, followed by 200 ms recovery. Each trial starts from neural rest with the same seed.`;
     $('motor-status').textContent = idle ? 'Taste · Ready'
-      : state.error || `${names[state.mode]} · ${state.paused && state.status === 'running' ? 'Paused' : state.status}`;
+      : state.error || `${state.source ? `${state.source.label} · world contact` : names[state.mode]} · ${state.paused && state.status === 'running' ? 'Paused' : state.status}`;
     $('motor-progress').value = state.simulated_ms || 0;
     $('motor-time').textContent = `${(state.simulated_ms || 0).toFixed(0)} / 500 ms`;
     $('motor-time').dataset.tooltip = `Shared clock: ${(state.simulated_ms || 0).toFixed(1)} ms neural / ${(state.physical_ms || 0).toFixed(1)} ms physical time. Neither is wall time.`;

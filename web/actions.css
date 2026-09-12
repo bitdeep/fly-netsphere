@@ -1,6 +1,7 @@
 .action-bar{position:absolute;z-index:5;bottom:99px;left:50%;transform:translateX(-50%);width:min(660px,calc(100vw - 32px));padding:12px 15px;border:1px solid #bbd5cc40;border-radius:10px;background:#0c181ee8;box-shadow:0 6px 24px #0003}
 .action-heading{display:flex;justify-content:space-between;gap:16px;margin-bottom:9px;font:9px monospace;color:#a6c0b8}
 .action-heading>span:first-child{letter-spacing:1.6px}
+.action-heading #habitat-open{padding:3px 8px;border:1px solid #b8d6c350;border-radius:4px;background:#b8d6c318;color:#c9e1d3;font:10px monospace;margin-right:auto}
 .action-presets{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .action-presets button{position:relative;min-height:53px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:1px solid var(--line);border-radius:5px;background:#afcec208;font-size:10px}
 .action-symbol{font:21px sans-serif;line-height:22px;color:#c3e0d0}
