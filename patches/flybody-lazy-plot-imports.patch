@@ -1,0 +1,26 @@
+--- a/flybody/utils.py
++++ b/flybody/utils.py
+@@ -2,11 +2,6 @@
+ 
+ from typing import Sequence
+ 
+-from IPython.display import HTML
+-import matplotlib
+-import matplotlib.animation as animation
+-import matplotlib.pyplot as plt
+-
+ 
+ def rollout_and_render(env, policy, n_steps=100,
+                        run_until_termination=False,
+@@ -45,6 +40,11 @@
+         frames (array): (n_frames, height, width, 3)
+         framerate (int)
+     """
++    import matplotlib
++    import matplotlib.animation as animation
++    import matplotlib.pyplot as plt
++    from IPython.display import HTML
++
+     height, width, _ = frames[0].shape
+     dpi = 70
+     orig_backend = matplotlib.get_backend()
