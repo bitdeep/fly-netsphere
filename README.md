@@ -10,6 +10,9 @@ The animal is the anatomically detailed [flybody](https://github.com/TuragaLab/f
 
 The full 60-second take, its metrics and the validation files are attached to the [v0.1.0 release](https://github.com/bitdeep/fly-netsphere/releases/tag/v0.1.0).
 
+**New preview — a fly living in the NETSPHERE, from its viewpoint.**
+[Watch the stabilized 60-second recording](https://github.com/bitdeep/fly-netsphere/releases/download/pov-stabilization-preview-1/blame_pov_60s-fly_city_stabilized.mp4) of the updated megastructure. The camera follows the physical head with a level horizon; the same flight completes 1.2 million physics steps with zero world contacts. [Camera comparison, validation and replay instructions](docs/stabilized-pov.md).
+
 ## What this is, and what it is not
 
 - It **is** whole-body physics: joints, wings with ellipsoid fluid forces, and the official DMPO flight policy (wingbeat pattern generator plus a residual MLP) driving the actuators.
@@ -41,7 +44,7 @@ Perturbation tests with the same seed and initial pose: moving the first pillar 
 ## How it works
 
 ```
-city_world.py        MJCF world: procedural brutalist district, 412 geoms including the fly, lengths in cm
+city_world.py        MJCF world: procedural brutalist district, 542 geoms including the fly, lengths in cm
         │
 city_navigation.py   every 10 ms: candidate manoeuvres vs. distance to the world → reference command
         ▼
@@ -58,9 +61,9 @@ verify_take.py       independent checks: duration, decoded frames, clearance, ha
 
 - **Policy.** `scripts/flight_mlp.py` is a NumPy port of the official Acme checkpoint: Linear → LayerNorm → tanh, then ELU layers and a mean head. `scripts/flight_cuda.py` runs the same controller with NVIDIA Warp, and the two are compared numerically on every run.
 - **Observations and actions.** A 104-D observation (the `walker/*` keys in lexicographic order) maps to a 12-D canonical action in [-1, 1], then to actuator ranges. Controller step 2e-4 s, physics step 5e-5 s.
-- **World.** `scripts/city_world.py` builds a central core, pillars, ducts, cables, walkways, access plates, grilles and wear. Textures are procedural and drawn in surface coordinates. The NETSPHERE plates are physical geometry.
+- **World.** `scripts/city_world.py` builds a deep shaft, stacked galleries, a central core, pillars, ducts and sagging cables. Large concrete volumes have formwork seams, cracks and mineral streaks; service elements use metal panels. Cold light and blue-grey distance fog give depth to the interior. Textures are procedural and drawn in surface coordinates. The NETSPHERE plates and every cable segment are physical geometry. The published `netsphere_60s` take uses the earlier, 412-geom district.
 - **Navigation.** `scripts/city_navigation.py` is a receding-horizon navigator over known geometry. It explores four regions of the district and keeps wing and body clearance.
-- **Camera.** A near-lateral third-person view (azimuth 85°, elevation 2°) shortens its distance with a ray test when scenery is in the way. A first-person view is available. Visibility is checked on every frame with an unfiltered object-ID render.
+- **Camera.** First-person places the camera at the integrated `walker/head` position, with a 65° vertical field of view. The default comfort mode keeps pitch and roll at zero and follows the tangent of the measured head path after symmetric Gaussian smoothing (σ = 0.25 s). It uses neighboring recorded states to remove the rapid gaze oscillation caused by sampling instantaneous flapping velocity at video rate. Only viewing direction is filtered; the eye stays at the physical head in every exposure sample. The observer hides the fly's own anatomy to avoid filming inside its head; physical anatomy and collisions remain active. This is a human viewing camera, not a compound-eye simulation or the navigator's sensor. An optional near-lateral third-person view (azimuth 85°, elevation 2°) shortens its distance with a ray test when scenery is in the way. Visibility is checked on every frame with an unfiltered object-ID render; first-person positions are independently checked against the saved head kinematics.
 - **Timing.** The video clock is the physics clock. A run that falls or touches the world is rejected and its diagnostics are kept. No episode is stretched or restarted.
 
 ## Quick start
@@ -85,9 +88,28 @@ docker compose run --rm fly python scripts/verify_take.py out/my_take --seconds 
 
 `simulate_city.sh SECONDS DIR [VIEW]` runs simulation, render and verification; `VIEW` defaults to `first-person`, and the validated take uses `third-person`. `docker compose run --rm fly` with no arguments runs the script with its defaults.
 
+For the updated district from the fly's viewpoint:
+
+```bash
+make take VIEW=first-person TAKE=out/my_pov
+```
+
+To stabilize an existing recording without recomputing or changing its physics:
+
+```bash
+docker compose run --rm fly python scripts/render_city.py out/my_pov \
+  --view first-person --stabilization comfort --output out/my_pov/stabilized.mp4
+docker compose run --rm fly python scripts/verify_take.py out/my_pov \
+  --seconds 60 --video stabilized.mp4
+```
+
+`--stabilization legacy` reproduces the previous velocity-following gaze.
+Comfort validation checks the actual rendered camera basis, level horizon and
+angular acceleration, alongside the unchanged state/model hashes.
+
 A minute of flight is 300,000 controller steps and 1.2 million physics steps. Expect roughly 15 minutes of compute per simulated minute on an RTX 4090, plus rendering. The first run compiles the CUDA kernels, which are cached in the `warp-cache` volume.
 
-Each take directory contains `fly_city.mp4`, `states.npz` (poses, velocities, physics clock, navigator commands and the sub-poses of every frame), `model.mjb` (the compiled model with its geometry and textures), `metrics.json` and `validation.json`. States can be re-rendered with another camera without recomputing physics.
+Each take directory contains `fly_city.mp4`, `states.npz` (poses, velocities, physics clock, navigator commands and the sub-poses of every frame), `model.mjb` (the compiled model with its geometry and textures), `metrics.json`, `fly_city.render.json` (camera and per-frame visibility) and `validation.json`. States can be re-rendered with another camera without recomputing physics. Use `verify_take.py DIR --seconds 60 --video wide.mp4` to validate an alternative recording.
 
 Options of `scripts/run_city.py`: `--seconds`, `--seed`, `--backend cuda|cpu`, `--obstacle-shift`, `--disable-avoidance` (negative control), `--body-pitch` (cruise reference, default 30°) and `--shutter-samples`.
 
