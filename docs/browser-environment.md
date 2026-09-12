@@ -40,6 +40,11 @@ values; click/tap also opens inspector tooltips. Graph position selects the
 nearest 5 ms sample. Escape dismisses the tooltip. Short **Experimental link**
 and **Neural only** labels keep the coupling boundary visible.
 Transparency uses a flat alpha background without an additional blur pass.
+The action bar itself retains a measured result: downstream spikes, proboscis
+movement, baseline or blocked-link outcome, or an explicitly incomplete stopped
+trial. Short button captions distinguish **Proboscis** responses from
+**Neural only** assays. Tooltips never receive pointer events; action hints appear
+above the whole bar so they cannot cover another control's hit target.
 
 Select the animal with **Fly 001**, the specimen card, or its marker when visible.
 Selection and camera movement never command its muscles.
@@ -231,6 +236,17 @@ motor link with the inspector closed, and stopped/restarted an antennal trial.
 Desktop and mobile tooltips worked with pointer, click and keyboard focus.
 The mobile panel and action bar remained separate with no horizontal overflow.
 Detailed counts and causal comparisons are in the [motor guide](motor-link.md#validation).
+An additional control audit found that a comparison tooltip could cover the Water
+button and intercept the next click. After correcting placement and pointer
+handling, all 12 preset/mode combinations were exercised through the browser with
+the inspector closed, checking both telemetry and the visible result. Focus changed
+only the camera; the inspector toggle opened/closed; Stop cancelled both a driven
+motor trial while paused and an antennal trial. Disabled Wings/Walk captions and
+their explanations were inspected; those behaviors remain unimplemented.
+The 390×844 layout had no horizontal overflow or panel/bar overlap, and the
+comparison-to-preset transition worked with its tooltip visible. No JavaScript
+exceptions or non-200 requests were observed in that audit; the software graphics
+context recovered after resizing. The test browser was closed.
 Page/process live-reload and 30 FPS on the user's hardware remain separate from
 those checks.
 

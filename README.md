@@ -95,6 +95,8 @@ this protocol. **Wings** and **Walk** are labeled **Not connected**.
 Use **Focus** to inspect the head and **Neural activity** to open the transparent
 inspector. Hover, focus or tap its components and numbers for explanations;
 point along a graph to inspect measured samples. Actions work with the panel closed.
+The bar retains the measured result, including spike counts and whether the
+proboscis moved, so neural-only responses remain visible without opening the panel.
 **Baseline**, **Block link** (or **Block sensory** for Antenna) and **Stop** apply
 to the selected protocol. Taste trials share 500 ms of neural and physical time;
 the antennal assay retains its separate clock and has no muscle coupling.

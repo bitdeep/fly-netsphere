@@ -5,7 +5,7 @@ export function createActions(neural, motor, command, selectReadout) {
   const presets = [...document.querySelectorAll('[data-preset]')];
   let selected = 'sugar', state = null, connected = false, pending = false;
   let seenMotor = 0, seenNeural = 0;
-  let rendered = '';
+  let rendered = '', renderedResult = '';
   $('fly-actions').hidden = false;
   function disabled(button, value) {
     // aria-disabled keeps reasons available to keyboard and touch users.
@@ -16,7 +16,39 @@ export function createActions(neural, motor, command, selectReadout) {
       && (preset === 'antenna' ? neural?.available
         : motor?.available && !state?.paused && state?.fly.sleeping);
   }
+  function renderResult() {
+    const isAntenna = selected === 'antenna';
+    const trial = isAntenna ? state?.neural : state?.motor;
+    const current = isAntenna || (trial?.stimulus || 'sugar') === selected;
+    const key = [selected, pending, current, trial?.revision, state?.paused, connected].join('|');
+    if (key === renderedResult) return;
+    renderedResult = key;
+    const label = names[selected];
+    let result;
+    if (pending) result = pending === 'stop' ? 'Stopping the trial…' : `Starting ${label}…`;
+    else if (!connected) result = 'Disconnected · waiting for the environment.';
+    else if (!current || !trial || trial.status === 'idle') result = `${label} · choose a stimulus to run a trial.`;
+    else if (trial.error) result = `${label} · ${trial.error}`;
+    else if (trial.status === 'unavailable') result = `${label} · neural link unavailable.`;
+    else if (trial.status === 'running') {
+      const paused = !isAntenna && state.paused;
+      result = `${label} · ${paused ? 'Paused' : 'Running'} · ${Math.round(trial.simulated_ms || 0)} / ${isAntenna ? 150 : 500} ms`;
+    } else if (trial.status === 'cancelled') result = `${label} · Stopped · incomplete result.`;
+    else {
+      const spikes = `${Number(trial.downstream_spikes || 0).toLocaleString('en-US')} downstream spikes`;
+      if (trial.mode === 'baseline') result = `${label} baseline · No input · ${spikes}`;
+      else if (trial.mode === 'blocked') result = `${label} · ${isAntenna ? 'Sensory output blocked' : 'Motor link blocked'} · ${spikes}`;
+      else if (isAntenna) result = `${label} · ${spikes} · Muscles unlinked`;
+      else {
+        const movement = trial.peak_excursion_deg > .05
+          ? `Proboscis moved ${trial.peak_excursion_deg.toFixed(1)}°` : 'No proboscis movement';
+        result = `${label} · ${movement} · ${spikes}`;
+      }
+    }
+    $('action-result').textContent = result;
+  }
   function render() {
+    renderResult();
     const key = [selected, connected, pending, state?.motor_running, state?.neural_running,
       state?.paused, state?.fly.sleeping, state?.motor?.stimulus].join('|');
     if (key === rendered) return;
