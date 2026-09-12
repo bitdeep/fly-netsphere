@@ -84,8 +84,11 @@ class EnvironmentPhysicsTests(unittest.TestCase):
 
     def test_passive_anatomy_and_collision_contract(self):
         world = self.env.world
-        self.assertIsNone(world["neural_controller"])
-        self.assertEqual(world["fly_body"]["neural_controller"], "disconnected")
+        if (world.get("motor") or {}).get("available"):
+            self.assertEqual(world["neural_controller"], "experimental MN9-to-rostrum link")
+        else:
+            self.assertIsNone(world["neural_controller"])
+            self.assertEqual(world["fly_body"]["neural_controller"], "disconnected")
         self.assertEqual(len(world["fly_body"]["bodies"]), 67)
         self.assertEqual(len(world["geoms"]), 383)
         self.assertTrue(all(geom["collision"] for geom in world["geoms"]))

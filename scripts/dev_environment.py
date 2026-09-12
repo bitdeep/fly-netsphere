@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WATCHED = [
     "serve_environment.py", "passive_fly.py", "city_world.py",
     "prepare_browser_fly.py", "fetch_neural_reference.py",
-    "neural_reference.py", "neural_lab.py",
+    "neural_reference.py", "neural_lab.py", "motor_bridge.py",
 ]
 
 
