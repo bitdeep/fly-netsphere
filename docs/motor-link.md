@@ -36,6 +36,13 @@ controller or complete ventral nerve cord. **Wings** and **Walk** therefore rema
 visibly **Not connected**, with explanations and no command handler. **Antenna**
 runs the separate assay and has no motor authority.
 
+The gallery additionally transfers [simplified energy/water reserves](habitat.md)
+during native mouth contact with measured rostrum force and at least 1° of
+displacement after MN9 spikes. This is an engineered intake gate, not swallowing
+or digestion. Direct presets never replenish reserves. Empty portions remove
+their taste input; death cancels motor authority. Stopping a world-triggered
+trial also disables reactive senses to prevent automatic retries.
+
 ## Biological source and engineering boundary
 
 The pinned [Shiu/Spiller notebook](https://github.com/philshiu/Drosophila_brain_model/blob/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/figures.ipynb)
@@ -88,7 +95,7 @@ to reproduce every published feeding experiment.
 | Bitter response | Fixed bitter events | Same adapter; no MN9 spikes in this protocol |
 | Baseline | None | No spikes and no actuator drive |
 | Block link | Identical selected sensory events | Normal brain activity; actuation disabled |
-| World contact | Selected events gated by mouth overlap | Same MN9 adapter; one response per placement |
+| World contact | Selected events gated by mouth overlap | Same MN9 adapter; finite food can retry after rest/cooldown |
 
 One neural step precedes one native physical step, both **0.1 ms**, on the same
 worker. A mismatch stops the trial. Pause freezes both clocks; paused time does

@@ -9,9 +9,11 @@ actuator from simulated motor-neuron spikes. A separate action bar offers sugar,
 water, bitter and antennal stimuli, with baseline and blocked-link comparisons.
 A transparent inspector keeps measured signals visible and puts explanations in
 hover, focus and touch tooltips.
-An **object gallery** adds fruit, water, bitter and neutral taste volumes.
+An **object gallery** adds apple, water, bitter and neutral taste volumes.
 Measured mouth contact can trigger and gate a neural response; removing a source
 cuts its future input. This is a bounded contact reflex, not autonomous foraging.
+**Energy and water bars** track simplified reserves. Measured feeding contact
+consumes finite portions; exhaustion of either reserve ends the simulated life.
 [Open the development environment](#interactive-environment-in-the-browser)
 or read the [object gallery](docs/habitat.md) and [motor link](docs/motor-link.md).
 
@@ -100,7 +102,13 @@ Open **Objects**, select an item and choose **Offer at mouth** to observe a
 contact response, or **Place in world** and click a nearby surface. Only mouth
 contact supplies taste: distant fruit does not attract the animal yet.
 Up to four objects share the existing scene. **React to objects** gates world
-input; each placement can evoke one bounded trial.
+input. Finite apple/water portions can evoke another bounded trial after rest
+and a two-second cooldown when the corresponding reserve is below 95%.
+Both reserves start at 70% and decrease on executed simulation time. Apple
+replenishes energy; water replenishes water, only during measured feeding contact.
+An empty portion disappears. **Pause** freezes reserves, and **New life** becomes
+available after either reserve runs out. These are game-scale survival rules,
+not simulated digestion or neural hunger. Direct stimulus buttons supply no food.
 Use **Focus** to inspect the head and **Neural activity** to open the transparent
 inspector. Hover, focus or tap its components and numbers for explanations;
 point along a graph to inspect measured samples. Actions work with the panel closed.
@@ -203,6 +211,9 @@ scripts/
   neural_lab.py        bounded on-demand trials and measured activity telemetry
   motor_bridge.py      shared-clock taste → FlyWire → MN9 → native rostrum servo
   habitat.py           four taste volumes, anatomical contact and gated sensory input
+  survival.py          finite energy/water reserves, physical-time drain and death
+  validate_survival.py real-graph intake controls, source conservation and lifecycle
+  test_survival.py     data-free reserve conservation and terminal-state checks
   validate_habitat.py   contact, removal, neutral controls, isolation and object bounds
   validate_motor_bridge.py causal motor controls, actuator isolation and clock checks
   fetch_neural_reference.py, prepare_neural_reference.py, validate_neural_reference.py
@@ -235,7 +246,7 @@ Dockerfile, docker-compose.yml, requirements.txt, requirements.lock
 - flybody is fetched at commit `d015e9b` with a verified tarball hash. The only local change is [one patch](patches/flybody-lazy-plot-imports.patch) that defers the matplotlib and IPython imports so the package loads without them.
 - Policies and the flight dataset come from the flybody Figshare deposit ([10.25378/janelia.25309105](https://doi.org/10.25378/janelia.25309105)) and are hash-checked after download.
 - Every `metrics.json` records the SHA-256 of the scripts, the checkpoint, the recorded states and the compiled model, so a take can be traced to the exact code that produced it.
-- GitHub CI checks Python, shell and browser-module syntax, verifies both Python
+- GitHub CI checks reserve conservation/lifecycle, Python, shell and browser-module syntax, verifies both Python
   dependency locks and applies the anatomy import patch to the pinned upstream
   source. It runs on pull requests and `main`; it does not allocate a GPU or
   download the full neural dataset. Physical and neural comparisons run locally

@@ -3,6 +3,7 @@ import { createFly } from './fly.js';
 import { createActions } from './actions.js';
 import { setupTooltips } from './inspect.js';
 import { createHabitat } from './habitat.js';
+import { createSurvival } from './survival.js';
 
 const $ = (selector) => document.querySelector(selector);
 const canvas = $('#world');
@@ -26,7 +27,7 @@ let needsRender = true, lastRender = 0, renderLimit = 30, pixelBudget = 1500000;
 let graphicsLost = false;
 let graphicsDevice = '', softwareGraphics = false, renderCostMs = 0;
 let cameraMovedSinceHud = false;
-let neuralPanel, actions, habitat;
+let neuralPanel, actions, habitat, survival;
 let fly, flyView = false, headView = false, orbitYaw = -.95, orbitPitch = .45, orbitDistance = .65;
 let scheduledFrame = 0, hudTimer = 0;
 const freeHelp = $('.navigation-help').innerHTML;
@@ -67,6 +68,7 @@ function setConnected(value) {
   for (const id of ['#drop', '#pause', '#speed']) $(id).disabled = !value;
   actions?.setConnected(value);
   habitat?.setConnected(value);
+  survival?.setConnected(value);
 }
 
 async function command(payload) {
@@ -93,10 +95,12 @@ function updateState(next) {
   if (!next.neural || (state?.neural?.revision ?? -1) > next.neural.revision) next.neural = state?.neural;
   if (!next.motor || (state?.motor?.revision ?? -1) > next.motor.revision) next.motor = state?.motor;
   if (!next.habitat || (state?.habitat?.revision ?? -1) > next.habitat.revision) next.habitat = state?.habitat;
+  if (!next.survival || (state?.survival?.revision ?? -1) > next.survival.revision) next.survival = state?.survival;
   state = next;
   neuralPanel?.update(next.neural, next.motor);
   actions?.update(next);
   habitat?.update(next.habitat);
+  survival?.update(next);
   lastEvent = performance.now();
   setConnected(!next.error);
   if (next.error) {
@@ -114,7 +118,7 @@ function updateState(next) {
     if (flyView) orbitCamera();
     invalidate();
   }
-  $('#fly-status').textContent = next.paused ? 'Paused' : next.fly.sleeping ? 'At rest' : next.motor_running ? 'Motor trial' : 'Settling';
+  $('#fly-status').textContent = !next.survival?.alive ? 'Dead' : next.paused ? 'Paused' : next.fly.sleeping ? 'At rest' : next.motor_running ? 'Motor trial' : 'Settling';
   $('#fly-drive').textContent = next.motor?.drive_enabled ? 'Rostrum only' : 'Off';
   if (!probe) return;
   const moved = probe.position.distanceToSquared(scratch.fromArray(next.probe.position)) > 1e-8;
@@ -310,6 +314,18 @@ function orbitCamera() {
   invalidate();
 }
 
+function frameObserver() {
+  camera.clearViewOffset();
+  if (flyView) {
+    // Keep the animal in the visible space above the taller reserve/action bar.
+    // Only the observer projection changes; simulation and body pose are untouched.
+    const barTop = $('#fly-actions').getBoundingClientRect().top;
+    const focusY = Math.max(130, (85 + barTop) / 2);
+    camera.setViewOffset(innerWidth, innerHeight, 0, innerHeight / 2 - focusY,
+      innerWidth, innerHeight);
+  }
+}
+
 function setView(id, immediate = false) {
   cameraMovedSinceHud = true;
   flyView = id === 'fly';
@@ -320,6 +336,7 @@ function setView(id, immediate = false) {
   $('.navigation-help').innerHTML = flyView ? '<span>Drag to orbit</span><span>Scroll to zoom</span>' : freeHelp;
   camera.near = flyView ? .001 : .04;
   camera.updateProjectionMatrix();
+  frameObserver();
   document.querySelectorAll('[data-view]').forEach((button) => {
     const selected = button.dataset.view === id;
     button.classList.toggle('selected', selected);
@@ -609,6 +626,7 @@ function bindControls() {
   addEventListener('resize', () => {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
+    frameObserver();
     renderer.setPixelRatio(Math.min(1, Math.sqrt(pixelBudget / (innerWidth * innerHeight))));
     renderer.setSize(innerWidth, innerHeight);
     if (flyView) orbitCamera();
@@ -653,11 +671,14 @@ async function start() {
     const response = await fetch('/api/world');
     if (!response.ok) throw new Error('The environment service did not respond.');
     world = await response.json();
+    survival = createSurvival(command);
+    const tooltips = setupTooltips();
     if (world.neural) {
       const { createNeuralPanel } = await import('./neural.js');
-      neuralPanel = createNeuralPanel(world.neural, world.motor, setupTooltips());
-      actions = createActions(world.neural, world.motor, command, (kind) => neuralPanel.select(kind));
+      neuralPanel = createNeuralPanel(world.neural, world.motor, tooltips);
     }
+    actions = createActions(world.neural, world.motor, command, (kind) => neuralPanel?.select(kind));
+    $('#neural-open').disabled = !world.neural;
     await buildWorld();
     habitat = createHabitat(world.habitat, scene, command, invalidate,
       () => $('#motor-focus').click());

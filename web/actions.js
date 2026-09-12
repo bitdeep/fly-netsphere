@@ -12,7 +12,7 @@ export function createActions(neural, motor, command, selectReadout) {
     button.setAttribute('aria-disabled', String(value));
   }
   function allowed(preset) {
-    return connected && !pending && !state?.motor_running && !state?.neural_running
+    return connected && state?.survival?.alive && !pending && !state?.motor_running && !state?.neural_running
       && (preset === 'antenna' ? neural?.available
         : motor?.available && !state?.paused && state?.fly.sleeping);
   }
@@ -50,7 +50,7 @@ export function createActions(neural, motor, command, selectReadout) {
   function render() {
     renderResult();
     const key = [selected, connected, pending, state?.motor_running, state?.neural_running,
-      state?.paused, state?.fly.sleeping, state?.motor?.stimulus].join('|');
+      state?.paused, state?.fly.sleeping, state?.motor?.stimulus, state?.survival?.alive].join('|');
     if (key === rendered) return;
     rendered = key;
     for (const button of presets) {
@@ -62,6 +62,7 @@ export function createActions(neural, motor, command, selectReadout) {
     disabled($('trial-stop'), !connected || pending || !(state?.motor_running || state?.neural_running));
     const active = state?.motor_running ? state.motor : state?.neural_running ? state.neural : null;
     $('action-status').textContent = !connected ? 'Reconnecting…'
+      : !state?.survival?.alive ? 'Life ended'
       : pending ? pending === 'stop' ? 'Stopping…' : 'Starting…'
       : active ? `${state.motor_running ? names[active.stimulus || 'sugar'] : 'Antenna'} · ${state.motor_running && state.paused ? 'Paused' : 'Running'}`
       : !neural?.available ? 'Neural cache unavailable'

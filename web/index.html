@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#11191d">
-  <meta name="description" content="Offer taste objects to a physical fruit fly. Mouth contact gates a FlyWire neural response and an experimental proboscis motor link. Explore the object gallery, stimulus controls and measured neural activity.">
+  <meta name="description" content="Keep a physical fruit fly supplied with finite apple and water portions. Track simplified energy and water reserves, contact-gated FlyWire neural responses and measured proboscis movement. Autonomous locomotion remains pending.">
   <title>NETSPHERE — Fly environment</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/actions.css">
   <link rel="stylesheet" href="/habitat.css">
+  <link rel="stylesheet" href="/survival.css">
   <script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script>
   <script type="module" src="/environment.js"></script>
 </head>
@@ -63,6 +64,19 @@
     </section>
     <section id="fly-actions" class="action-bar" aria-label="Fly actions" hidden>
       <div class="action-heading"><span>FLY 001</span><button id="habitat-open" aria-controls="habitat-panel" aria-expanded="false" data-tooltip="Place taste objects in the world, or offer one at the mouth. Contact can start a neural response.">◇ Objects</button><span id="action-status" role="status">Connecting…</span></div>
+      <section id="life-reserves" class="life-reserves" aria-label="Survival reserves">
+        <div class="reserve-meters">
+          <div id="energy-reserve" class="reserve" tabindex="0" data-tooltip="Energy starts at 70% and loses 0.2 percentage points per simulated second. Apple contact plus measured feeding movement can replenish it. These are game-scale parameters, not fly metabolism.">
+            <label class="reserve-label" for="energy-meter">Energy <span id="energy-value">—</span></label>
+            <meter id="energy-meter" min="0" max="100" value="70"></meter>
+          </div>
+          <div id="water-reserve" class="reserve" tabindex="0" data-tooltip="Water starts at 70% and loses 0.3 percentage points per simulated second. Water portions replenish this reserve during measured feeding contact. Pause freezes both reserves.">
+            <label class="reserve-label" for="water-meter">Water <span id="water-value">—</span></label>
+            <meter id="water-meter" min="0" max="100" value="70"></meter>
+          </div>
+        </div>
+        <div class="life-caption"><span id="life-status" role="status" tabindex="0" data-tooltip="Zero energy or water ends this simulated life and disables neural trials. Food cannot revive it. New life restores the starting reserves without moving the body. Reloading the page preserves this state; restarting the backend resets the experiment.">Alive · reserves model</span><button id="life-restart" hidden data-tooltip="Start another survival experiment at 70% energy and water. Keeps the body's physical pose, world objects and Pause setting.">New life</button></div>
+      </section>
       <div class="action-presets" role="group" aria-label="Stimuli and behaviors">
         <button data-preset="sugar" aria-pressed="true" data-tooltip="Sugar sensory stimulus → full FlyWire graph → MN9 → proboscis. This models a feeding-initiation response, not eating or digestion."><span class="action-symbol" aria-hidden="true">♧</span>Feed<small>Proboscis</small></button>
         <button data-preset="water" aria-pressed="false" data-tooltip="Stimulate 18 published water-sensing neurons. The same MN9-to-rostrum adapter reads the resulting spikes."><span class="action-symbol" aria-hidden="true">◊</span>Water<small>Proboscis</small></button>
@@ -78,7 +92,7 @@
         </div>
         <div role="group" aria-label="Observation and trial controls">
           <button id="motor-focus" data-tooltip="Focus the observer on the proboscis. This moves only the camera.">Focus</button>
-          <button id="trial-stop" aria-disabled="true" data-tooltip="Stop the running trial. Motor actuation is disabled; the body settles under normal physics.">■ Stop</button>
+          <button id="trial-stop" aria-disabled="true" data-tooltip="Stop the running trial. Motor actuation is disabled; the body settles under normal physics. Stopping an object response also switches off React to objects to prevent automatic retries.">■ Stop</button>
           <button id="neural-open" aria-controls="neural-panel" aria-expanded="false" data-tooltip="Show or hide the transparent neural inspector. Actions remain available in this bar.">Neural activity</button>
         </div>
       </div>
@@ -87,7 +101,7 @@
     <aside id="habitat-panel" class="habitat-panel" aria-labelledby="habitat-title" hidden>
       <div class="habitat-heading"><div><span class="eyebrow">OBJECT GALLERY</span><h2 id="habitat-title">A world to taste.</h2></div><button id="habitat-close" class="icon-button" aria-label="Close object gallery">×</button></div>
       <div class="habitat-kinds" role="group" aria-label="Object type">
-        <button data-object-kind="fruit" aria-pressed="true"><i style="background:#e8b56d" aria-hidden="true"></i>Fruit</button>
+        <button data-object-kind="fruit" aria-pressed="true"><i style="background:#dc775e" aria-hidden="true"></i>Apple</button>
         <button data-object-kind="water" aria-pressed="false"><i style="background:#80c7df" aria-hidden="true"></i>Water</button>
         <button data-object-kind="bitter" aria-pressed="false"><i style="background:#b094ce" aria-hidden="true"></i>Bitter</button>
         <button data-object-kind="neutral" aria-pressed="false"><i style="background:#adb9b2" aria-hidden="true"></i>Neutral</button>
@@ -96,11 +110,11 @@
         <button id="habitat-offer" data-tooltip="Place the selected taste volume at the measured mouth position. Only the object is placed; the fly is not moved.">Offer at mouth</button>
         <button id="habitat-place" aria-pressed="false" data-tooltip="Click a surface within 3 cm of the fly. These sources have taste only; the fly cannot smell or chase them yet.">Place in world</button>
       </div>
-      <label class="habitat-senses" data-tooltip="Geometric mouth contact starts one bounded neural response per placed object. Contact is sampled every 5 ms and gates sensory input as the mouth moves. This is a contact reflex, not continuous brain autonomy."><input id="habitat-senses" type="checkbox">React to objects</label>
+      <label class="habitat-senses" data-tooltip="Mouth contact gates a bounded neural response. Apple and water can retry after rest, at least two simulated seconds apart, while reserves are below 95%. Each response starts from neural rest; this is not continuous brain autonomy."><input id="habitat-senses" type="checkbox">React to objects</label>
       <div id="habitat-status" role="status"></div>
       <span id="habitat-count" aria-label="Placed objects"></span>
       <ul id="habitat-objects" aria-label="Placed objects"></ul>
-      <div class="habitat-boundary" tabindex="0" data-tooltip="Permeable, stationary taste volumes, not rigid fruit or fluid simulation. No smell, ingestion, learned preferences or autonomous locomotion. Each contact response starts from neural rest and lasts at most 500 ms.">Contact → brain → proboscis · Locomotion pending</div>
+      <div class="habitat-boundary" tabindex="0" data-tooltip="Each apple or water portion holds 20 percentage points of its reserve. Transfer requires measured MN9-driven mouth movement and contact; empty portions disappear. Intake is simplified resource accounting, not digestion. These stationary taste volumes have no odor or collision.">Contact → brain → feeding → reserves · Flight pending</div>
     </aside>
     <div id="placement-hint" role="status" hidden>Click a surface near the fly · Escape cancels</div>
     <aside id="neural-panel" class="neural-panel" aria-labelledby="neural-title" hidden>
