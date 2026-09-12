@@ -63,10 +63,10 @@
     <section id="fly-actions" class="action-bar" aria-label="Fly actions" hidden>
       <div class="action-heading"><span>FLY 001</span><span id="action-status" role="status">Connecting…</span></div>
       <div class="action-presets" role="group" aria-label="Stimuli and behaviors">
-        <button data-preset="sugar" aria-pressed="true" data-tooltip="Sugar sensory stimulus → full FlyWire graph → MN9 → proboscis. This models a feeding-initiation response, not eating or digestion."><span class="action-symbol" aria-hidden="true">♧</span>Feed</button>
-        <button data-preset="water" aria-pressed="false" data-tooltip="Stimulate 18 published water-sensing neurons. The same MN9-to-rostrum adapter reads the resulting spikes."><span class="action-symbol" aria-hidden="true">◊</span>Water</button>
-        <button data-preset="bitter" aria-pressed="false" data-tooltip="Stimulate 21 published bitter-sensing neurons. A neural response can occur without MN9 spikes or proboscis movement."><span class="action-symbol" aria-hidden="true">✧</span>Bitter</button>
-        <button data-preset="antenna" aria-pressed="false" data-tooltip="Stimulate 146 antennal sensory neurons and inspect aBN1/aDN1/aDN2. Neural readouts only: grooming muscles are not connected."><span class="action-symbol" aria-hidden="true">⌁</span>Antenna</button>
+        <button data-preset="sugar" aria-pressed="true" data-tooltip="Sugar sensory stimulus → full FlyWire graph → MN9 → proboscis. This models a feeding-initiation response, not eating or digestion."><span class="action-symbol" aria-hidden="true">♧</span>Feed<small>Proboscis</small></button>
+        <button data-preset="water" aria-pressed="false" data-tooltip="Stimulate 18 published water-sensing neurons. The same MN9-to-rostrum adapter reads the resulting spikes."><span class="action-symbol" aria-hidden="true">◊</span>Water<small>Proboscis</small></button>
+        <button data-preset="bitter" aria-pressed="false" data-tooltip="Stimulate 21 published bitter-sensing neurons. A neural response can occur without MN9 spikes or proboscis movement."><span class="action-symbol" aria-hidden="true">✧</span>Bitter<small>Neural only</small></button>
+        <button data-preset="antenna" aria-pressed="false" data-tooltip="Stimulate 146 antennal sensory neurons and inspect aBN1/aDN1/aDN2. Neural readouts only: grooming muscles are not connected."><span class="action-symbol" aria-hidden="true">⌁</span>Antenna<small>Neural only</small></button>
         <button data-unlinked="wings" aria-disabled="true" data-tooltip="Not connected. Neural wingbeats need additional motor circuitry and a validated wing controller. This button does not run an animation or the separate MLP flight policy."><span class="action-symbol" aria-hidden="true">⋈</span>Wings<small>Not connected</small></button>
         <button data-unlinked="walk" aria-disabled="true" data-tooltip="Not connected. Neural walking needs ventral nerve cord circuitry, leg coordination and a validated muscle mapping. The current FlyWire brain-to-body link controls only the rostrum."><span class="action-symbol" aria-hidden="true">⋔</span>Walk<small>Not connected</small></button>
       </div>
@@ -81,6 +81,7 @@
           <button id="neural-open" aria-controls="neural-panel" aria-expanded="false" data-tooltip="Show or hide the transparent neural inspector. Actions remain available in this bar.">Neural activity</button>
         </div>
       </div>
+      <div id="action-result" class="action-result" role="status" tabindex="0" data-tooltip="Measured result of the selected trial. Downstream spikes exclude the directly stimulated neurons. Movement is the largest measured proboscis joint-angle change.">Choose a stimulus to see its response.</div>
     </section>
     <aside id="neural-panel" class="neural-panel" aria-labelledby="neural-title" hidden>
       <div class="neural-heading">

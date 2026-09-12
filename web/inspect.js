@@ -14,7 +14,8 @@ export function setupTooltips() {
     box.textContent = target.dataset.tooltip;
     box.hidden = false;
     target.setAttribute('aria-describedby', box.id);
-    const rect = target.getBoundingClientRect();
+    // Action hints belong above the whole bar, never over its other buttons.
+    const rect = (target.closest('#fly-actions') || target).getBoundingClientRect();
     const width = box.offsetWidth, height = box.offsetHeight;
     box.style.left = `${Math.max(10, Math.min(innerWidth - width - 10, rect.left + rect.width / 2 - width / 2))}px`;
     const top = rect.top > height + 20 ? rect.top - height - 9 : rect.bottom + 9;

@@ -1,4 +1,4 @@
-.neural-panel{position:absolute;right:24px;top:125px;max-height:calc(100vh - 402px);width:min(365px,calc(100vw - 40px));z-index:4;overflow:auto;overscroll-behavior:contain;background:#0c18268c;border:1px solid #c3d9dc40;border-radius:8px;padding:17px;color:#e4efe8;scrollbar-width:thin;text-shadow:0 1px 3px #08131ccc}
+.neural-panel{position:absolute;right:24px;top:125px;max-height:calc(100vh - 450px);width:min(365px,calc(100vw - 40px));z-index:4;overflow:auto;overscroll-behavior:contain;background:#0c18268c;border:1px solid #c3d9dc40;border-radius:8px;padding:17px;color:#e4efe8;scrollbar-width:thin;text-shadow:0 1px 3px #08131ccc}
 .neural-open .map-panel{visibility:hidden}
 .neural-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .neural-heading h2{font-size:20px;margin:6px 0 4px;font-weight:400}
@@ -45,5 +45,5 @@
 .neural-readout-table thead{font:9px sans-serif;color:#a5b7be}
 .neural-panel .neural-footnote{font-size:9px;margin-top:16px}
 .neural-panel a{color:#bfd7ce;text-underline-offset:3px}
-@media(max-height:650px) and (min-width:701px){.neural-panel{top:90px;max-height:calc(100vh - 348px)}}
-@media(max-width:700px){.neural-panel{top:90px;max-height:calc(100vh - 355px);right:12px;width:calc(100vw - 24px);padding:14px}.neural-open .intro,.neural-open #fly-panel{visibility:hidden}.neural-heading h2{font-size:19px}}
+@media(max-height:650px) and (min-width:701px){.neural-panel{top:90px;max-height:calc(100vh - 396px)}}
+@media(max-width:700px){.neural-panel{top:90px;max-height:calc(100vh - 403px);right:12px;width:calc(100vw - 24px);padding:14px}.neural-open .intro,.neural-open #fly-panel{visibility:hidden}.neural-heading h2{font-size:19px}}
