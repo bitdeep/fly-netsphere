@@ -1,3 +1,5 @@
+import { createMotorPanel } from './motor.js';
+
 const $ = (id) => document.getElementById(id);
 const svgNS = 'http://www.w3.org/2000/svg';
 const format = (number) => Number(number || 0).toLocaleString('en-US');
@@ -8,14 +10,18 @@ function svgElement(tag, attributes = {}) {
   return element;
 }
 
-export function createNeuralPanel(descriptor, command) {
+export function createNeuralPanel(descriptor, motorDescriptor, command) {
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.href = '/neural.css';
   document.head.append(stylesheet);
   const panel = $('neural-panel'), open = $('neural-open');
   const buttons = [...panel.querySelectorAll('[data-neural-mode]')];
-  let state = null, rendered = -1, pending = false, connected = true;
+  let state = null, rendered = -1, pending = false, connected = true, motorBusy = false;
+  const motor = createMotorPanel(motorDescriptor, command, (value) => {
+    motorBusy = value;
+    controls();
+  });
   const nodeElements = new Map(), readoutElements = new Map();
   open.hidden = false;
 
@@ -24,6 +30,7 @@ export function createNeuralPanel(descriptor, command) {
     document.body.classList.toggle('neural-open', value);
     open.setAttribute('aria-expanded', String(value));
     if (value) {
+      motor.render();
       render();
       $('neural-close').focus();
     } else open.focus();
@@ -33,10 +40,11 @@ export function createNeuralPanel(descriptor, command) {
   panel.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') { event.stopPropagation(); show(false); }
   });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { render(); motor.render(); } });
 
   if (!descriptor.available) {
-    $('neural-status').textContent = descriptor.error || 'Neural reference unavailable.';
+    $('neural-unavailable').textContent = descriptor.error || 'Neural reference unavailable.';
+    $('neural-unavailable').hidden = false;
     $('neural-content').hidden = true;
     return { update() {}, setConnected() {} };
   }
@@ -101,7 +109,7 @@ export function createNeuralPanel(descriptor, command) {
 
   function controls() {
     for (const button of buttons) {
-      button.disabled = !connected || pending || state?.status === 'running';
+      button.disabled = !connected || pending || motorBusy || state?.status === 'running';
       button.setAttribute('aria-pressed', String(state?.mode === button.dataset.neuralMode));
     }
   }
@@ -109,9 +117,10 @@ export function createNeuralPanel(descriptor, command) {
     button.addEventListener('click', async () => {
       if (pending) return;
       pending = true;
+      motor.setOtherBusy(true);
       controls();
       try { await command({ action: 'neural_trial', mode: button.dataset.neuralMode }); }
-      finally { pending = false; controls(); }
+      finally { pending = false; motor.setOtherBusy(state?.status === 'running'); controls(); }
     });
   }
 
@@ -181,12 +190,14 @@ export function createNeuralPanel(descriptor, command) {
   }
 
   return {
-    update(next) {
+    update(next, motorState, paused, sleeping) {
+      motor.update(motorState, paused, sleeping);
+      motor.setOtherBusy(next?.status === 'running' || pending);
       if (!next || next.revision === state?.revision) return;
       state = next;
       controls();
       render();
     },
-    setConnected(value) { connected = value; controls(); },
+    setConnected(value) { connected = value; motor.setConnected(value); controls(); },
   };
 }

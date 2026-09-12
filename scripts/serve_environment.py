@@ -1,4 +1,4 @@
-"""Local browser observatory over the existing City MJCF, without a fly controller."""
+"""Local City observatory with one physical fly and a bounded neural motor assay."""
 import argparse
 import base64
 import gzip
@@ -50,8 +50,7 @@ class Environment:
                  solref=[.002, 1], priority=1, contype=1, conaffinity=1)
         xml = root.to_xml_string()
         self.model = mujoco.MjModel.from_xml_string(xml, root.get_assets())
-        # Actuator definitions remain present but no actuator generates force.
-        # Sleeping is explicitly allowed only for this disconnected, passive stage.
+        # Start passive. A motor trial may enable only its allowlisted actuator.
         self.model.opt.enableflags |= int(mujoco.mjtEnableBit.mjENBL_SLEEP)
         self.model.opt.disableflags |= int(mujoco.mjtDisableBit.mjDSBL_ACTUATION)
         self.model.tree_sleep_policy[:] = mujoco.mjtSleepPolicy.mjSLEEP_ALLOWED
@@ -78,9 +77,15 @@ class Environment:
         self.lock = threading.Lock()
         self.stop = threading.Event()
         self.neural = None
+        self.motor = None
         if os.environ.get("FLY_NEURAL") == "1":
             from neural_lab import NeuralLab
+            from motor_bridge import MotorBridge
             self.neural = NeuralLab(self.stop)
+            self.motor = MotorBridge(self.neural.graph, self.model, self.data, self.fly_tree)
+            if self.motor.descriptor["available"]:
+                self.fly_description["neural_controller"] = "experimental MN9-to-rostrum link"
+                self.fly_description["actuator_drive"] = "rostrum only during motor trials"
         self.paused = False
         self.speed = 1.0
         self.probe_active = False
@@ -154,8 +159,11 @@ class Environment:
             "source": "scripts/city_world.py", "model_sha256": hashlib.sha256(xml.encode()).hexdigest(),
             "engine": f"MuJoCo {mujoco.__version__}", "timestep": float(model.opt.timestep),
             "gravity": model.opt.gravity.tolist(), "geoms": geoms, "materials": materials,
-            "neural_controller": None, "fly_body": self.fly_description,
+            "neural_controller": ("experimental MN9-to-rostrum link"
+                                  if self.motor and self.motor.descriptor["available"] else None),
+            "fly_body": self.fly_description,
             "neural": self.neural.descriptor if self.neural else None,
+            "motor": self.motor.descriptor if self.motor else None,
             "probe": {"radius": PROBE_RADIUS, "start": PROBE_START},
             "views": [
                 {"id": "gallery", "title": "South gallery", "position": [-50, -35, 16],
@@ -174,16 +182,32 @@ class Environment:
         if not isinstance(command, dict):
             raise ValueError("Expected a command object")
         action = command.get("action")
-        if action == "neural_trial" and set(command) == {"action", "mode"}:
-            if self.neural is None:
-                raise ValueError("The neural lab is not enabled in this environment")
-            self.neural.start(command["mode"])
-            return
         with self.lock:
-            if action == "pause" and set(command) == {"action", "paused"}:
+            if self.stop.is_set():
+                raise ValueError("The environment is stopping")
+            if action in ("neural_trial", "motor_trial") and set(command) == {"action", "mode"}:
+                if self.neural is None:
+                    raise ValueError("The neural lab is not enabled in this environment")
+                if self.motor.active or self.neural.snapshot()["status"] == "running":
+                    raise ValueError("A neural trial is already running")
+                if action == "motor_trial":
+                    if self.paused or self.error:
+                        raise ValueError("Resume the physical simulation before starting a motor trial")
+                    if self.data.tree_asleep[self.fly_tree] < 0:
+                        raise ValueError("Let the fly settle before starting a motor trial")
+                    self.motor.start(command["mode"])
+                    self.next_pose_time = 0.
+                else:
+                    self.neural.start(command["mode"])
+            elif action == "motor_stop" and set(command) == {"action"}:
+                if self.motor:
+                    self.motor.finish()
+            elif action == "pause" and set(command) == {"action", "paused"}:
                 if not isinstance(command["paused"], bool):
                     raise ValueError("paused must be boolean")
                 self.paused = command["paused"]
+                if self.motor:
+                    self.motor.set_paused(self.paused)
             elif action == "speed" and set(command) == {"action", "value"}:
                 if type(command["value"]) not in (int, float) or command["value"] not in (.25, 1):
                     raise ValueError("speed must be 0.25 or 1")
@@ -200,6 +224,8 @@ class Environment:
                 self.probe_generation += 1
                 self.probe_trail = [PROBE_START.copy()]
                 self.paused = False
+                if self.motor:
+                    self.motor.set_paused(False)
             else:
                 raise ValueError("Unknown command")
 
@@ -225,7 +251,7 @@ class Environment:
             self.fly_contacts_seen = True
             self.fly_contact_count = count
 
-    def snapshot(self, pose_revision=None, trail_version=None, neural_revision=None):
+    def snapshot(self, pose_revision=None, trail_version=None, neural_revision=None, motor_revision=None):
         with self.lock:
             state = {
                 "sequence": self.sequence, "time": float(self.data.time),
@@ -254,6 +280,12 @@ class Environment:
                 state["neural_running"] = neural["status"] == "running"
                 if neural_revision != neural["revision"]:
                     state["neural"] = neural
+            if self.motor:
+                motor = self.motor.state
+                state["motor_revision"] = motor["revision"]
+                state["motor_running"] = self.motor.active
+                if motor_revision != motor["revision"]:
+                    state["motor"] = motor
             return state
 
     def _run(self):
@@ -275,8 +307,12 @@ class Environment:
                         steps = min(int(accumulator/self.model.opt.timestep), 250)
                         remaining = steps
                         while remaining:
-                            block = min(10, remaining) if self.data.ntree_awake else remaining
-                            mujoco.mj_step(self.model, self.data, nstep=block)
+                            if self.motor and self.motor.active:
+                                block = 1
+                                self.motor.step()
+                            else:
+                                block = min(10, remaining) if self.data.ntree_awake else remaining
+                                mujoco.mj_step(self.model, self.data, nstep=block)
                             remaining -= block
                             self._sample_contacts()
                             if self.probe_active and len(self.probe_trail) < 500:
@@ -295,12 +331,13 @@ class Environment:
                     if now >= self.next_pose_time:
                         mujoco.mj_kinematics(self.model, self.data)
                         self._cache_fly_pose()
-                        self.next_pose_time = now + (POSE_INTERVAL if self.data.ntree_awake else 1)
+                        active = self.data.ntree_awake or (self.motor and self.motor.active)
+                        self.next_pose_time = now + (POSE_INTERVAL if active else 1)
                     self.sequence += 1
                     if now-measured_wall >= 1:
                         self.ratio = (self.data.time-measured_sim)/(now-measured_wall)
                         measured_wall, measured_sim = now, self.data.time
-                    awake = bool(self.data.ntree_awake) and not self.paused
+                    awake = (bool(self.data.ntree_awake) or bool(self.motor and self.motor.active)) and not self.paused
                 # Enforce the worker's duty budget even if host quota accounting
                 # is delayed. Slow physical time rather than growing a backlog.
                 cpu_used = time.thread_time()-cpu_started
@@ -308,8 +345,14 @@ class Environment:
                            cpu_used/PHYSICS_CPU_BUDGET-(time.monotonic()-now))
         except Exception as exc:
             with self.lock:
+                if self.motor:
+                    self.motor.finish("error", str(exc))
                 self.error = str(exc)
                 self.paused = True
+        finally:
+            with self.lock:
+                if self.motor:
+                    self.motor.finish()
 
 
 class Server(ThreadingHTTPServer):
@@ -373,18 +416,20 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "text/event-stream")
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()
-                pose_revision = trail_version = neural_revision = None
+                pose_revision = trail_version = neural_revision = motor_revision = None
                 while not env.stop.is_set():
-                    state = env.snapshot(pose_revision, trail_version, neural_revision)
+                    state = env.snapshot(pose_revision, trail_version, neural_revision, motor_revision)
                     payload = json.dumps(state, separators=(",", ":"))
                     self.wfile.write(f"data: {payload}\n\n".encode())
                     self.wfile.flush()
                     pose_revision = state["fly"]["pose_revision"]
                     trail_version = (state["probe"]["generation"], state["probe"]["trail_count"])
                     neural_revision = state.get("neural_revision")
+                    motor_revision = state.get("motor_revision")
                     active = not state["fly"]["sleeping"] or (state["probe"]["active"] and not state["probe"]["contact_seen"])
                     interval = POSE_INTERVAL if active and not state["paused"] else 1
-                    env.stop.wait(min(interval, .1) if state.get("neural_running") else interval)
+                    running = state.get("neural_running") or (state.get("motor_running") and not state["paused"])
+                    env.stop.wait(min(interval, .1) if running else interval)
             except (BrokenPipeError, ConnectionResetError, TimeoutError):
                 pass
             finally:
@@ -414,6 +459,7 @@ class Handler(BaseHTTPRequestHandler):
             "/environment.js": ("web/environment.js", "text/javascript; charset=utf-8"),
             "/fly.js": ("web/fly.js", "text/javascript; charset=utf-8"),
             "/neural.js": ("web/neural.js", "text/javascript; charset=utf-8"),
+            "/motor.js": ("web/motor.js", "text/javascript; charset=utf-8"),
             "/neural.css": ("web/neural.css", "text/css; charset=utf-8"),
             "/dev-reload.js": ("web/dev-reload.js", "text/javascript; charset=utf-8"),
             "/style.css": ("web/style.css", "text/css; charset=utf-8"),
@@ -468,10 +514,10 @@ def main():
     server = Server(args.port, environment)
     environment.start()
     print(f"NETSPHERE ready on port {args.port}: "
-          f"{len(environment.world['geoms'])} world geoms; no neural controller.", flush=True)
+          f"{len(environment.world['geoms'])} world geoms; one physical fly.", flush=True)
     if environment.neural:
         print(f"Neural reference lab: {environment.neural.snapshot()['status']}; "
-              "body actuators disconnected.", flush=True)
+              f"MN9 motor link: {environment.motor.state['status']}.", flush=True)
     try:
         server.serve_forever()
     finally:

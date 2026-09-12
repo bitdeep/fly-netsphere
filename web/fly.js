@@ -71,6 +71,7 @@ export async function createFly(description, scene) {
   let revision = -1;
   return {
     position,
+    headPosition: bones[description.bodies.indexOf('head')].position,
     get revision() { return revision; },
     get visible() { return rig.visible; },
     apply(state) {

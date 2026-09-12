@@ -24,7 +24,7 @@ let graphicsLost = false;
 let graphicsDevice = '', softwareGraphics = false, renderCostMs = 0;
 let cameraMovedSinceHud = false;
 let neuralPanel;
-let fly, flyView = false, orbitYaw = -.95, orbitPitch = .45, orbitDistance = .65;
+let fly, flyView = false, headView = false, orbitYaw = -.95, orbitPitch = .45, orbitDistance = .65;
 let scheduledFrame = 0, hudTimer = 0;
 const freeHelp = $('.navigation-help').innerHTML;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -87,8 +87,9 @@ async function command(payload) {
 function updateState(next) {
   if (!next.probe.trail) next.probe.trail = state?.probe.trail || [];
   if (!next.neural || (state?.neural?.revision ?? -1) > next.neural.revision) next.neural = state?.neural;
+  if (!next.motor || (state?.motor?.revision ?? -1) > next.motor.revision) next.motor = state?.motor;
   state = next;
-  neuralPanel?.update(next.neural);
+  neuralPanel?.update(next.neural, next.motor, next.paused, next.fly.sleeping);
   lastEvent = performance.now();
   setConnected(!next.error);
   if (next.error) {
@@ -106,7 +107,8 @@ function updateState(next) {
     if (flyView) orbitCamera();
     invalidate();
   }
-  $('#fly-status').textContent = next.fly.sleeping ? 'At rest' : next.paused ? 'Paused' : 'Settling';
+  $('#fly-status').textContent = next.paused ? 'Paused' : next.fly.sleeping ? 'At rest' : next.motor_running ? 'Motor trial' : 'Settling';
+  $('#fly-drive').textContent = next.motor?.drive_enabled ? 'Rostrum only' : 'Off';
   if (!probe) return;
   const moved = probe.position.distanceToSquared(scratch.fromArray(next.probe.position)) > 1e-8;
   if (probe.visible !== next.probe.active || (next.probe.active && moved)) {
@@ -290,12 +292,13 @@ function orient() {
 }
 
 function orbitCamera() {
+  const focus = headView ? fly.headPosition : fly.position;
   camera.position.set(
     Math.cos(orbitYaw) * Math.cos(orbitPitch),
     Math.sin(orbitYaw) * Math.cos(orbitPitch),
     Math.sin(orbitPitch),
-  ).multiplyScalar(orbitDistance * Math.max(1, .95 / camera.aspect)).add(fly.position);
-  camera.lookAt(fly.position);
+  ).multiplyScalar(orbitDistance * Math.max(1, .95 / camera.aspect)).add(focus);
+  camera.lookAt(focus);
   syncAngles();
   invalidate();
 }
@@ -303,6 +306,7 @@ function orbitCamera() {
 function setView(id, immediate = false) {
   cameraMovedSinceHud = true;
   flyView = id === 'fly';
+  headView = false;
   document.body.classList.toggle('fly-view', flyView);
   $('#fly-panel').hidden = !flyView;
   $('#gravity-panel').hidden = flyView;
@@ -480,6 +484,13 @@ function updateHud() {
 }
 
 function bindControls() {
+  $('#motor-focus').addEventListener('click', () => {
+    setView('fly', true);
+    headView = true;
+    orbitDistance = .35;
+    orbitPitch = .25;
+    orbitCamera();
+  });
   document.querySelectorAll('[data-view]').forEach((button) => {
     button.addEventListener('click', () => setView(button.dataset.view));
   });
@@ -625,7 +636,7 @@ async function start() {
     world = await response.json();
     if (world.neural) {
       const { createNeuralPanel } = await import('./neural.js');
-      neuralPanel = createNeuralPanel(world.neural, command);
+      neuralPanel = createNeuralPanel(world.neural, world.motor, command);
     }
     await buildWorld();
     const [animal, initial] = await Promise.all([

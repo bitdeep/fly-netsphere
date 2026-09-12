@@ -4,9 +4,10 @@
 
 Explore the **NETSPHERE** in a local browser, inspect one anatomical flybody animal,
 and stimulate a **127,400-neuron FlyWire reference model** while watching measured
-neural activity. The browser currently keeps neural signals and body actuators
-disconnected. [Open the development environment](#interactive-environment-in-the-browser)
-or read the [neural model and its limits](docs/neural-reference.md).
+neural activity. An experimental **MN9-to-proboscis link** now drives one body
+actuator from simulated motor-neuron spikes, with explicit baseline and blocked-link
+controls. [Open the development environment](#interactive-environment-in-the-browser)
+or read the [motor link and its limits](docs/motor-link.md).
 
 The animal is the anatomically detailed [flybody](https://github.com/TuragaLab/flybody) model of *Drosophila melanogaster* (Google DeepMind and HHMI Janelia, *Nature* 2025). In the separate recorded-flight pipeline, its pretrained controller runs on CUDA, MuJoCo Warp integrates the body and wing aerodynamics at 20 kHz, and a geometric navigator steers the fly through the collidable interior. Every frame of those recordings comes from the integrated physical state.
 
@@ -24,8 +25,9 @@ The full 60-second take, its metrics and the validation files are attached to th
 - It **is** whole-body physics: joints, wings with ellipsoid fluid forces, and the official DMPO flight policy (wingbeat pattern generator plus a residual MLP) driving the actuators.
 - It **is** a real 3D world: walls, pillars, ducts, cables and walkways with collision in the same MuJoCo model that integrates the fly. The camera moves through that space.
 - The **recorded flight** uses the official MLP policy. The browser development lab
-  also runs stimulus-response trials on the published FlyWire 630 connectome;
-  those neural signals are **not yet connected to the body's muscles**.
+  runs the published FlyWire 630 connectome and an experimental sugar-response
+  motor link. Its firing-rate-to-servo adapter is engineered; world sensing,
+  neural walking and neural flight remain unimplemented.
 - The navigator is **not** learned vision. It reads the known world geometry and the measured position at 100 Hz and picks turns and climbs with clearance for wings and body. It only changes the reference command; it never writes the animal's pose or velocity.
 
 ## Results
@@ -78,20 +80,23 @@ verify_take.py       independent checks: duration, decoded frames, clearance, ha
 
 ### Interactive environment in the browser
 
-The local browser observatory contains **one passive flybody animal**, selectable
+The local browser observatory contains **one physical flybody animal**, selectable
 with a close-up orbit camera, plus three city viewpoints and a gravity/contact
-experiment. Its **neural controller is disconnected and actuator drive disabled**:
-it settles physically, with no autonomous walking or flight policy.
-The **Neural activity** panel runs a separate FlyWire 630 reference assay with
-127,400 neurons and all 14,687,178 stored directed connections. It shows calculated
-spikes, selected real connections and the workflow up to the disconnected muscles.
-Stimulate antennal neurons, compare a baseline or block sensory output.
+experiment. It settles passively between on-demand trials, with no autonomous
+walking or flight policy. Open **Neural activity → Stimulate sugar neurons** to
+run the entire FlyWire 630 graph (127,400 neurons, 14,687,178 stored connections)
+and drive the rostrum from its two MN9 motor neurons. **View proboscis** focuses
+the observer on the head. Neural and physical time advance together in this
+500 ms experiment. Compare no input or a blocked motor link; the UI retains
+measured spikes, drive and joint motion after completion.
+The expandable antennal reference assay retains its separate clock and readouts.
 Three.js renders measured body poses on demand; native MuJoCo sleep reduces idle
 work. The backend is capped at 2 CPUs and 1 GiB. The browser requests
 high-performance GPU graphics and targets 30 FPS while moving, with bounded
 resolution; backend physics and neural computation remain on the CPU.
 [Anatomy preparation, controls and limitations](docs/browser-environment.md) ·
-[Neural preparation, numerical validation and limitations](docs/neural-reference.md).
+[Neural preparation and numerical validation](docs/neural-reference.md) ·
+[Motor protocol, engineered adapter and causal checks](docs/motor-link.md).
 
 ```bash
 pnpm-docker install --frozen-lockfile  # provisioned Socket-protected Docker launcher
@@ -173,12 +178,14 @@ scripts/
   verify_take.py        independent acceptance checks on states, geometry and video
   verify_avoidance.py   compare baseline, shifted-obstacle and avoidance-off runs
   city_world.py         procedural collidable megastructure
-  serve_environment.py local browser service, one passive fly and live gravity test
+  serve_environment.py local browser service, one physical fly and live gravity test
   dev_environment.py   container-owned backend watcher; one dev stack on port 8089
   neural_reference.py  incremental LIF dynamics over the full FlyWire 630 graph
   neural_lab.py        bounded on-demand trials and measured activity telemetry
+  motor_bridge.py      shared-clock sugar → FlyWire → MN9 → native rostrum servo
+  validate_motor_bridge.py causal motor controls, actuator isolation and clock checks
   fetch_neural_reference.py, prepare_neural_reference.py, validate_neural_reference.py
-  passive_fly.py       cached anatomy attachment, disabled actuator drive
+  passive_fly.py       cached anatomy attachment and passive initialization
   prepare_browser_fly.py bounded anatomy preparation, full-resolution mass properties
   test_environment.py  physical contact, sleep/wake, state isolation and telemetry checks
   city_navigation.py    receding-horizon geometric navigator

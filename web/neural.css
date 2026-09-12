@@ -40,6 +40,9 @@
 .neural-legend{display:flex;gap:18px;font-size:9px;color:#adc6b8}
 .neural-legend span:last-child{color:#d39e84}
 #neural-timeline{width:100%;height:auto;display:block}
+#motor-timeline{width:100%;height:auto;display:block}
+.antennal-details{border-top:1px solid var(--line);margin-top:22px;padding-top:16px}
+.antennal-details summary{font-size:11px;color:#bfd7ce;cursor:pointer;line-height:1.6}
 .neural-readout-table{width:100%;border-collapse:collapse;font:11px monospace;margin:10px 0}
 .neural-readout-table th,.neural-readout-table td{padding:8px 0;border-bottom:1px solid #c3d9dc18;text-align:right;font-weight:400}
 .neural-readout-table th:first-child{text-align:left}

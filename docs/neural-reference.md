@@ -7,14 +7,17 @@ counts preserved. It uses the data and model parameters from
 [Shiu and Spiller's reference repository at commit 91bdd1e](https://github.com/philshiu/Drosophila_brain_model/tree/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960).
 This is not the newer MaleCNS dataset. Specimens and releases remain distinct.
 
-The body remains passive. There is no motor mapping, walking pilot or flight
-policy in the browser. The neural assay has its own clock and starts from rest
-for each trial; it is not a continuously embodied animal. World-to-sensory mapping,
-ventral nerve cord/muscle coupling and their validation remain future work.
+The antennal assay described here has its own clock, starts from neural rest
+and does not drive the body. A separate [sugar-response motor experiment](motor-link.md)
+now couples the same full graph's MN9 neurons to the flybody rostrum through an
+explicit engineered adapter, with a shared neural/physical clock.
+World-to-sensory mapping, broader muscle control, walking and flight remain
+future work; this is not a continuously embodied animal.
 
 ## Protocol and visible signals
 
-Open **Neural activity** in the Fly 001 card. Each trial lasts 150 ms of neural
+Open **Neural activity → Antennal reference assay** in the Fly 001 card.
+Each antennal trial lasts 150 ms of neural
 time: 100 ms of input followed by 50 ms of recovery. The 146 published JON
 antennal neurons come from the CE, F and D groups in the reference notebook.
 Input is delivered directly to those neurons, not through simulated antenna
@@ -40,7 +43,8 @@ on each connection.
 
 The neural panel updates from the existing event stream without invalidating the
 3D scene. It redraws its diagram/timeline only after a changed sample, while open
-and visible. Muscle disconnection stays explicit in the workflow.
+and visible. Muscle disconnection stays explicit in the antennal workflow;
+the sugar motor link has its own labeled workflow and measured body trace.
 
 ## Model and numerical comparison
 
@@ -111,7 +115,9 @@ The viewer and neural worker share **one** development container, limited to
 2 CPUs, 1 GiB and 64 PIDs, with no GPU compute allocation. Browser rendering
 separately requests its high-performance GPU. The neural worker has a
 0.15-core duty budget in addition to the physics worker's 0.9-core budget.
-One on-demand trial can run at a time; limits are 90 seconds elapsed, 10 CPU
+Only one antennal or motor trial can run at a time. The motor experiment runs
+inside the existing physics worker's budget, sharing the immutable graph.
+Antennal limits are 90 seconds elapsed, 10 CPU
 seconds and 100,000 spikes, checked every 25 steps. A limit stops the trial
 explicitly with incomplete-result status instead of silently truncating it.
 Small block overshoot is possible; Docker provides the outer CPU/memory limits.

@@ -8,10 +8,16 @@ vertically, **Shift** to move faster and the mouse wheel to move forward/backwar
 The three city view buttons return to known observation points. Touch screens have
 movement buttons and support dragging to look.
 
-The animal is a **passive physical body with its neural controller disconnected**.
-All actuator forces are disabled; anatomical springs, joints, gravity and contact
-remain active. It settles under physics; it does not walk or fly autonomously.
-The **Neural activity** panel opens a separate connectome reference assay:
+The animal settles passively and has **one experimental neural motor link**.
+Open **Neural activity → Stimulate sugar neurons** to route calculated MN9 spikes
+through an engineered adapter to the native rostrum servo. **View proboscis**
+focuses the observer on the head. Compare **Baseline · no input** and **Block motor
+link**; **Stop** removes actuator authority. New trials wait for physical rest,
+and pause/resume affects both clocks. All other actuators remain disabled.
+Anatomical springs, joints, gravity and contact stay active. It does not walk or
+fly autonomously. [Motor protocol and causal validation](motor-link.md).
+
+The expandable **Antennal reference assay** retains a separate connectome assay:
 antennal stimulus → FlyWire LIF dynamics → neural readouts → disconnected muscles.
 Its structure view shows a selection of actual connections with schematic positions;
 the entire published graph is retained in the simulation. Counts and voltages come
@@ -94,7 +100,7 @@ activating the `dev` profile cannot start a flight recording in the background.
   103,807 triangles (source: 272,550), with maximum original-vertex displacement
   15.2 µm, and a 2.56 MiB binary packet before HTTP compression.
   The 67 physical segments have a total mass of approximately 0.985 mg.
-- Native MuJoCo sleep is allowed for this disconnected stage, at the default
+- Native MuJoCo sleep is allowed between motor trials, at the default
   0.001 cm/s tolerance. The attachment frame's rotational sleep length is corrected
   from its distance to the world origin to a conservative anatomical collision
   radius (0.286 cm). This changes sleep eligibility, not forces or integration.
@@ -105,7 +111,9 @@ activating the `dev` profile cannot start a flight recording in the background.
   This accuracy/idle-cost tradeoff is specific to the passive viewer, not a
   connectome or controlled-locomotion validation.
   See [MuJoCo sleeping semantics](https://mujoco.readthedocs.io/en/stable/programming/simulation.html#sleeping-islands).
-  Connecting actuators later requires explicit wake handling.
+  The motor bridge uses MuJoCo's documented negative-zero applied-force wake
+  signal, adding no nonzero force. The fly tree cannot sleep while driven;
+  completing or stopping the trial restores passive sleep eligibility.
 - One backend simulation thread advances independently of browser tabs. Server
   events target changed body poses at up to 30 Hz and idle status at 1 Hz.
   Unchanged poses and trails are omitted per viewer; reconnect starts with a full
@@ -115,6 +123,8 @@ activating the `dev` profile cannot start a flight recording in the background.
   6 ms of thread CPU, checked between native stepping blocks, so costly body
   settling cannot hold up every state read for a full 250-step batch.
   Only executed steps are subtracted from the bounded accumulator.
+  A coupled motor trial advances one neural and one physical step together,
+  inside that same physics-thread budget. It adds no second simulation worker.
   While settling, physical time may advance slower than wall
   time; the footer reports the measured ratio. Resting bodies resume near 1×.
   Pause and 0.25× speed affect the
@@ -152,13 +162,15 @@ activating the `dev` profile cannot start a flight recording in the background.
 
 The server only serves an allowlist of frontend assets and read endpoints:
 `/api/world`, `/api/state`, `/api/events`, `/health`, plus `/api/dev-version` in
-development mode. `POST /api/command` accepts bounded drop, pause, speed and
-`neural_trial` commands with same-origin JSON. Neural trial mode must be
-`stimulus`, `baseline` or `blocked`; one trial runs at a time. It cannot read
+development mode. `POST /api/command` accepts bounded drop, pause, speed,
+`neural_trial`, `motor_trial` and `motor_stop` commands with same-origin JSON.
+Trial mode must be `stimulus`, `baseline` or `blocked`; only one neural or motor
+trial runs at a time. Motor commands cannot select arbitrary neurons, actuator
+names, gains, torques or durations. It cannot read
 arbitrary project files or edit the scene. At most eight event streams are open
 at once. The container has a read-only filesystem and limits of 2 CPUs, 1 GiB
 RAM and 64 PIDs. These limits cover the backend; the browser is a separate process.
-The neural worker has an additional duty budget of 0.15 core, runs only on request
+The separate antennal worker has a duty budget of 0.15 core, runs only on request
 and publishes changes at up to 10 Hz. It adds no continuous scene render loop.
 This local server is not intended to be exposed directly to the internet.
 
@@ -178,6 +190,9 @@ They check the unchanged anatomical contracts, disabled actuation, fly contact,
 native sleep and force-triggered wake, and compare sleep with 200 ms of awake
 dynamics (segment drift must remain below the measured visual reduction
 displacement, currently 15.2 µm). Delta telemetry is also checked.
+The [motor validation](motor-link.md#validation) separately tests the full graph
+against no-input and blocked-link controls, exact clock alignment, sleeping-body
+wake, the actuator allowlist, cancellation and failure handling.
 Browser checks cover visible rendering, view changes, mouse/keyboard motion,
 pause/resume, slow motion, the gravity experiment, reconnect and mobile layout.
 The measured passive-viewer sample below predates the neural panel. The later
