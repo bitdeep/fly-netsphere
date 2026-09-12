@@ -207,6 +207,11 @@ Dockerfile, docker-compose.yml, requirements.txt, requirements.lock
 - flybody is fetched at commit `d015e9b` with a verified tarball hash. The only local change is [one patch](patches/flybody-lazy-plot-imports.patch) that defers the matplotlib and IPython imports so the package loads without them.
 - Policies and the flight dataset come from the flybody Figshare deposit ([10.25378/janelia.25309105](https://doi.org/10.25378/janelia.25309105)) and are hash-checked after download.
 - Every `metrics.json` records the SHA-256 of the scripts, the checkpoint, the recorded states and the compiled model, so a take can be traced to the exact code that produced it.
+- GitHub CI checks Python, shell and browser-module syntax, verifies both Python
+  dependency locks and applies the anatomy import patch to the pinned upstream
+  source. It runs on pull requests and `main`; it does not allocate a GPU or
+  download the full neural dataset. Physical and neural comparisons run locally
+  in the bounded Docker environments described above.
 
 ## Roadmap
 

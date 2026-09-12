@@ -17,9 +17,22 @@ jobs:
         run: python -m compileall -q scripts
       - name: Shell syntax
         run: for f in scripts/*.sh; do bash -n "$f"; done
+      - name: Browser module syntax
+        run: |
+          node --version
+          for f in web/*.js; do node --check "$f"; done
       - name: Lockfile is hash-pinned
         run: |
-          test "$(grep -c -- '--hash=sha256:' requirements.lock)" -ge 60
-          ! grep -E '^[A-Za-z0-9_.-]+==' requirements.lock | grep -v -- '--hash' >/dev/null
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          for name, minimum in [("requirements.lock", 60), ("requirements.neural-tools.lock", 7)]:
+              entries = [line for line in Path(name).read_text().splitlines()
+                         if line.strip() and not line.startswith("#")]
+              assert len(entries) >= minimum, name
+              assert all(re.fullmatch(r"[A-Za-z0-9_.-]+==[^ ]+ --hash=sha256:[a-f0-9]{64}", line)
+                         for line in entries), f"Unpinned dependency in {name}"
+              print(f"{name}: {len(entries)} hash-pinned wheels")
+          PY
       - name: Patch applies to the pinned flybody commit
         run: scripts/fetch_flybody.sh
