@@ -1,0 +1,722 @@
+[
+  {
+    "name": "numpy",
+    "version": "1.26.4",
+    "wheel": "https://files.pythonhosted.org/packages/4b/d7/ecf66c1cd12dc28b4040b15ab4d17b773b87fa9d29ca16125de01adb36cd/numpy-1.26.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "ffa75af20b44f8dba823498024771d5ac50620e6915abac414251bd971b4529f",
+    "homepage": "https://numpy.org",
+    "project_urls": [
+      "Homepage, https://numpy.org",
+      "Documentation, https://numpy.org/doc/",
+      "Source, https://github.com/numpy/numpy",
+      "Download, https://pypi.org/project/numpy/#files",
+      "Tracker, https://github.com/numpy/numpy/issues",
+      "Release notes, https://numpy.org/doc/stable/release"
+    ]
+  },
+  {
+    "name": "dm_control",
+    "version": "1.0.46",
+    "wheel": "https://files.pythonhosted.org/packages/43/14/f678a816447389b70f4d95d18fa5972dd18984c6f1902e6a9f93fc0db914/dm_control-1.0.46-py3-none-any.whl",
+    "sha256": "be98ff8a88f26796caa0eb4ac11af4f19076c34fd9ab101b38f9d4bd4016c09a",
+    "homepage": "https://github.com/google-deepmind/dm_control",
+    "project_urls": []
+  },
+  {
+    "name": "mujoco",
+    "version": "3.13.0",
+    "wheel": "https://files.pythonhosted.org/packages/57/75/2b5cc322b741e397dc745355fe1f4e94a379f40a843cbecca679697f42db/mujoco-3.13.0-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "fee95f0cb2b94a1d72baf0bbebcc33ad44d0540c9bd0f25148e31a473735b2d5",
+    "homepage": null,
+    "project_urls": [
+      "Homepage, https://github.com/google-deepmind/mujoco",
+      "Documentation, https://mujoco.readthedocs.io/en/3.13.0",
+      "Repository, https://github.com/google-deepmind/mujoco",
+      "Changelog, https://mujoco.readthedocs.io/en/3.13.0/changelog.html"
+    ]
+  },
+  {
+    "name": "mujoco-warp",
+    "version": "3.13.0",
+    "wheel": "https://files.pythonhosted.org/packages/f8/ee/e5227c249c4aed5517f5331612c593965f19aec9f0d994f51c9aee8802fd/mujoco_warp-3.13.0-py3-none-any.whl",
+    "sha256": "cb1f74c36684ef5d2b610926d8979db8aa39fd78613a7130cf6a7ef802ee5e3c",
+    "homepage": null,
+    "project_urls": [
+      "Homepage, https://github.com/google-deepmind/mujoco_warp",
+      "Documentation, https://mujoco.readthedocs.io",
+      "Repository, https://github.com/google-deepmind/mujoco_warp",
+      "Changelog, https://mujoco.readthedocs.io/en/stable/changelog.html"
+    ]
+  },
+  {
+    "name": "warp-lang",
+    "version": "1.17.0",
+    "wheel": "https://files.pythonhosted.org/packages/a6/a1/e11aa6898e8bbb6910e89fe31a3338fb2566f038912010875c072e6dafd1/warp_lang-1.17.0-py3-none-manylinux_2_28_x86_64.whl",
+    "sha256": "47cd93636828dd16e55eeb4e77a0e3547b5fb0f383000a3d228629df68f28fd8",
+    "homepage": null,
+    "project_urls": [
+      "Homepage, https://developer.nvidia.com/warp-python",
+      "Documentation, https://nvidia.github.io/warp/stable/",
+      "Repository, https://github.com/NVIDIA/warp",
+      "Issues, https://github.com/NVIDIA/warp/issues",
+      "Changelog, https://github.com/NVIDIA/warp/blob/main/CHANGELOG.md"
+    ]
+  },
+  {
+    "name": "h5py",
+    "version": "3.12.1",
+    "wheel": "https://files.pythonhosted.org/packages/85/bc/e76f4b2096e0859225f5441d1b7f5e2041fffa19fc2c16756c67078417aa/h5py-3.12.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "59685fe40d8c1fbbee088c88cd4da415a2f8bee5c270337dc5a1c4aa634e3307",
+    "homepage": null,
+    "project_urls": [
+      "Homepage, https://www.h5py.org/",
+      "Source, https://github.com/h5py/h5py",
+      "Documentation, https://docs.h5py.org/en/stable/",
+      "Release notes, https://docs.h5py.org/en/stable/whatsnew/index.html",
+      "Discussion forum, https://forum.hdfgroup.org/c/hdf5/h5py"
+    ]
+  },
+  {
+    "name": "scipy",
+    "version": "1.14.1",
+    "wheel": "https://files.pythonhosted.org/packages/47/78/b0c2c23880dd1e99e938ad49ccfb011ae353758a2dc5ed7ee59baff684c3/scipy-1.14.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "8e32dced201274bf96899e6491d9ba3e9a5f6b336708656466ad0522d8528f69",
+    "homepage": "https://scipy.org/",
+    "project_urls": [
+      "Homepage, https://scipy.org/",
+      "Documentation, https://docs.scipy.org/doc/scipy/",
+      "Source, https://github.com/scipy/scipy",
+      "Download, https://github.com/scipy/scipy/releases",
+      "Tracker, https://github.com/scipy/scipy/issues"
+    ]
+  },
+  {
+    "name": "pillow",
+    "version": "10.4.0",
+    "wheel": "https://files.pythonhosted.org/packages/b5/5b/6651c288b08df3b8c1e2f8c1152201e0b25d240e22ddade0f1e242fc9fa0/pillow-10.4.0-cp310-cp310-manylinux_2_28_x86_64.whl",
+    "sha256": "a985e028fc183bf12a77a8bbf36318db4238a3ded7fa9df1b9a133f1cb79f8fc",
+    "homepage": null,
+    "project_urls": [
+      "Changelog, https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst",
+      "Documentation, https://pillow.readthedocs.io",
+      "Funding, https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi",
+      "Homepage, https://python-pillow.org",
+      "Mastodon, https://fosstodon.org/@pillow",
+      "Release notes, https://pillow.readthedocs.io/en/stable/releasenotes/index.html",
+      "Source, https://github.com/python-pillow/Pillow"
+    ]
+  },
+  {
+    "name": "imageio",
+    "version": "2.36.1",
+    "wheel": "https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl",
+    "sha256": "20abd2cae58e55ca1af8a8dcf43293336a59adf0391f1917bf8518633cfc2cdf",
+    "homepage": "https://github.com/imageio/imageio",
+    "project_urls": []
+  },
+  {
+    "name": "imageio-ffmpeg",
+    "version": "0.5.1",
+    "wheel": "https://files.pythonhosted.org/packages/fe/44/c9e18a73dfd939b5b0ec843870ac72f1f6c17e31a03149b687a85465bff7/imageio_ffmpeg-0.5.1-py3-none-manylinux2010_x86_64.whl",
+    "sha256": "5289f75c7f755b499653f3209fea4efd1430cba0e39831c381aad2d458f7a316",
+    "homepage": "https://github.com/imageio/imageio-ffmpeg",
+    "project_urls": []
+  },
+  {
+    "name": "tensorflow-cpu",
+    "version": "2.15.1",
+    "wheel": "https://files.pythonhosted.org/packages/d0/f4/058dc567de1ac67120a85119f19fe6288f45f6b08db8c03dfb38fa664874/tensorflow_cpu-2.15.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "ba9503db2c5357ea21938555323581fbdabf3d051b6bc1b5f73c5b0ae034d077",
+    "homepage": "https://www.tensorflow.org/",
+    "project_urls": []
+  },
+  {
+    "name": "tensorflow-probability",
+    "version": "0.23.0",
+    "wheel": "https://files.pythonhosted.org/packages/1e/90/4e8c686f2e691f48e40e16a539c61a6e9880743733d8c4dc3f275d12268e/tensorflow_probability-0.23.0-py2.py3-none-any.whl",
+    "sha256": "dda5cacfe50cb19ecd96f3ce81e6ff8680d84213bcfe94ca0aaf6e5f51c88061",
+    "homepage": "http://github.com/tensorflow/probability",
+    "project_urls": []
+  },
+  {
+    "name": "protobuf",
+    "version": "4.25.5",
+    "wheel": "https://files.pythonhosted.org/packages/05/a6/094a2640be576d760baa34c902dcb8199d89bce9ed7dd7a6af74dcbbd62d/protobuf-4.25.5-cp37-abi3-manylinux2014_x86_64.whl",
+    "sha256": "fe14e16c22be926d3abfcb500e60cab068baf10b542b8c858fa27e098123e331",
+    "homepage": "https://developers.google.com/protocol-buffers/",
+    "project_urls": []
+  },
+  {
+    "name": "wheel",
+    "version": "0.46.3",
+    "wheel": "https://files.pythonhosted.org/packages/87/22/b76d483683216dde3d67cba61fb2444be8d5be289bf628c13fc0fd90e5f9/wheel-0.46.3-py3-none-any.whl",
+    "sha256": "4b399d56c9d9338230118d705d9737a2a468ccca63d5e813e2a4fc7815d8bc4d",
+    "homepage": null,
+    "project_urls": [
+      "Changelog, https://wheel.readthedocs.io/en/stable/news.html",
+      "Documentation, https://wheel.readthedocs.io/",
+      "Issue Tracker, https://github.com/pypa/wheel/issues",
+      "Source, https://github.com/pypa/wheel"
+    ]
+  },
+  {
+    "name": "absl-py",
+    "version": "2.5.0",
+    "wheel": "https://files.pythonhosted.org/packages/58/0a/a10b45aab35b175aded078a462dc8d0c698f5b13946e7cb0869097b78bb6/absl_py-2.5.0-py3-none-any.whl",
+    "sha256": "0f17b89f2a4eaaedc4f28c622998aa690564b3012a396a4ffad0821007fe03ba",
+    "homepage": null,
+    "project_urls": [
+      "Changelog, https://github.com/abseil/abseil-py/blob/main/CHANGELOG.md",
+      "Documentation, https://abseil.io/docs/python/",
+      "Issues, https://github.com/abseil/abseil-py/issues",
+      "Source, https://github.com/abseil/abseil-py"
+    ]
+  },
+  {
+    "name": "astunparse",
+    "version": "1.6.3",
+    "wheel": "https://files.pythonhosted.org/packages/2b/03/13dde6512ad7b4557eb792fbcf0c653af6076b81e5941d36ec61f7ce6028/astunparse-1.6.3-py2.py3-none-any.whl",
+    "sha256": "c2652417f2c8b5bb325c885ae329bdf3f86424075c4fd1a128674bc6fba4b8e8",
+    "homepage": "https://github.com/simonpercivall/astunparse",
+    "project_urls": []
+  },
+  {
+    "name": "cloudpickle",
+    "version": "3.1.2",
+    "wheel": "https://files.pythonhosted.org/packages/88/39/799be3f2f0f38cc727ee3b4f1445fe6d5e4133064ec2e4115069418a5bb6/cloudpickle-3.1.2-py3-none-any.whl",
+    "sha256": "9acb47f6afd73f60dc1df93bb801b472f05ff42fa6c84167d25cb206be1fbf4a",
+    "homepage": "https://github.com/cloudpipe/cloudpickle",
+    "project_urls": []
+  },
+  {
+    "name": "dm-tree",
+    "version": "0.1.10",
+    "wheel": "https://files.pythonhosted.org/packages/6d/d6/2b88e4eb5e3e5ecf9d61afe55e463ce7c9e4d1dc6630b9f7038a62e548d1/dm_tree-0.1.10-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "7644b24bb5c7810b601f4b28cf6e4b516da96713ebfd9e45585240318c6b9384",
+    "homepage": "https://github.com/deepmind/tree",
+    "project_urls": []
+  },
+  {
+    "name": "flatbuffers",
+    "version": "25.12.19",
+    "wheel": "https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl",
+    "sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+    "homepage": "https://google.github.io/flatbuffers/",
+    "project_urls": [
+      "Documentation, https://google.github.io/flatbuffers/",
+      "Source, https://github.com/google/flatbuffers"
+    ]
+  },
+  {
+    "name": "gast",
+    "version": "0.7.0",
+    "wheel": "https://files.pythonhosted.org/packages/1d/33/f1c6a276de27b7d7339a34749cc33fa87f077f921969c47185d34a887ae2/gast-0.7.0-py3-none-any.whl",
+    "sha256": "99cbf1365633a74099f69c59bd650476b96baa5ef196fec88032b00b31ba36f7",
+    "homepage": "https://github.com/serge-sans-paille/gast/",
+    "project_urls": []
+  },
+  {
+    "name": "google-pasta",
+    "version": "0.2.0",
+    "wheel": "https://files.pythonhosted.org/packages/a3/de/c648ef6835192e6e2cc03f40b19eeda4382c49b5bafb43d88b931c4c74ac/google_pasta-0.2.0-py3-none-any.whl",
+    "sha256": "b32482794a366b5366a32c92a9a9201b107821889935a02b3e51f6b432ea84ed",
+    "homepage": "https://github.com/google/pasta",
+    "project_urls": []
+  },
+  {
+    "name": "grpcio",
+    "version": "1.83.1",
+    "wheel": "https://files.pythonhosted.org/packages/16/06/6704a480c0232965a2ea1d3895f711aee25baa1e8bf09ae404338a3f9ce6/grpcio-1.83.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "sha256": "b59eaaeeb03dde0a2708095fb50f1afa94f11dc1b459bb7790b53bfb8cf95153",
+    "homepage": null,
+    "project_urls": [
+      "Homepage, https://grpc.io",
+      "Source Code, https://github.com/grpc/grpc",
+      "Bug Tracker, https://github.com/grpc/grpc/issues",
+      "Documentation, https://grpc.github.io/grpc/python"
+    ]
+  },
+  {
+    "name": "keras",
+    "version": "2.15.0",
+    "wheel": "https://files.pythonhosted.org/packages/fc/a7/0d4490de967a67f68a538cc9cdb259bff971c4b5787f7765dc7c8f118f71/keras-2.15.0-py3-none-any.whl",
+    "sha256": "2dcc6d2e30cf9c951064b63c1f4c404b966c59caf09e01f3549138ec8ee0dd1f",
+    "homepage": "https://keras.io/",
+    "project_urls": []
+  },
+  {
+    "name": "libclang",
+    "version": "18.1.1",
+    "wheel": "https://files.pythonhosted.org/packages/1d/fc/716c1e62e512ef1c160e7984a73a5fc7df45166f2ff3f254e71c58076f7c/libclang-18.1.1-py2.py3-none-manylinux2010_x86_64.whl",
+    "sha256": "c533091d8a3bbf7460a00cb6c1a71da93bffe148f172c7d03b1c31fbf8aa2a0b",
+    "homepage": "https://github.com/sighingnow/libclang",
+    "project_urls": [
+      "Documentation, https://libclang.readthedocs.io",
+      "Source, https://github.com/sighingnow/libclang",
+      "Tracker, https://github.com/sighingnow/libclang/issues"
+    ]
+  },
+  {
+    "name": "ml-dtypes",
+    "version": "0.3.2",
+    "wheel": "https://files.pythonhosted.org/packages/71/01/7dc0e2cdead686a758810d08fd4111602088fe3f0d88064a83cbfb635593/ml_dtypes-0.3.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "961134ea44c7b8ca63eda902a44b58cd8bd670e21d62e255c81fba0a8e70d9b7",
+    "homepage": null,
+    "project_urls": [
+      "homepage, https://github.com/jax-ml/ml_dtypes",
+      "repository, https://github.com/jax-ml/ml_dtypes"
+    ]
+  },
+  {
+    "name": "opt_einsum",
+    "version": "3.4.0",
+    "wheel": "https://files.pythonhosted.org/packages/23/cd/066e86230ae37ed0be70aae89aabf03ca8d9f39c8aea0dec8029455b5540/opt_einsum-3.4.0-py3-none-any.whl",
+    "sha256": "69bb92469f86a1565195ece4ac0323943e83477171b91d24c35afe028a90d7cd",
+    "homepage": null,
+    "project_urls": []
+  },
+  {
+    "name": "packaging",
+    "version": "26.3",
+    "wheel": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl",
+    "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+    "homepage": null,
+    "project_urls": [
+      "Documentation, https://packaging.pypa.io/",
+      "Source, https://github.com/pypa/packaging"
+    ]
+  },
+  {
+    "name": "PyOpenGL",
+    "version": "3.1.10",
+    "wheel": "https://files.pythonhosted.org/packages/de/e4/1ba6f44e491c4eece978685230dde56b14d51a0365bc1b774ddaa94d14cd/pyopengl-3.1.10-py3-none-any.whl",
+    "sha256": "794a943daced39300879e4e47bd94525280685f42dbb5a998d336cfff151d74f",
+    "homepage": null,
+    "project_urls": [
+      "Homepage, https://mcfletch.github.io/pyopengl/",
+      "Download, https://pypi.org/project/PyOpenGL/",
+      "Source, https://github.com/mcfletch/pyopengl",
+      "Documentation, https://mcfletch.github.io/pyopengl/documentation/index.html"
+    ]
+  },
+  {
+    "name": "pyparsing",
+    "version": "3.3.2",
+    "wheel": "https://files.pythonhosted.org/packages/10/bd/c038d7cc38edc1aa5bf91ab8068b63d4308c66c4c8bb3cbba7dfbc049f9c/pyparsing-3.3.2-py3-none-any.whl",
+    "sha256": "850ba148bd908d7e2411587e247a1e4f0327839c40e2e5e6d05a007ecc69911d",
+    "homepage": null,
+    "project_urls": [
+      "Documentation, https://pyparsing-docs.readthedocs.io/en/latest/",
+      "Homepage, https://github.com/pyparsing/pyparsing/",
+      "Source, https://github.com/pyparsing/pyparsing.git"
+    ]
+  },
+  {
+    "name": "six",
+    "version": "1.17.0",
+    "wheel": "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl",
+    "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+    "homepage": "https://github.com/benjaminp/six",
+    "project_urls": []
+  },
+  {
+    "name": "tensorboard",
+    "version": "2.15.2",
+    "wheel": "https://files.pythonhosted.org/packages/37/12/f6e9b9dcc310263cbd3948274e286538bd6800fd0c268850788f14a0c6d0/tensorboard-2.15.2-py3-none-any.whl",
+    "sha256": "a6f6443728064d962caea6d34653e220e34ef8df764cb06a8212c17e1a8f0622",
+    "homepage": "https://github.com/tensorflow/tensorboard",
+    "project_urls": []
+  },
+  {
+    "name": "requests",
+    "version": "2.34.2",
+    "wheel": "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl",
+    "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+    "homepage": null,
+    "project_urls": [
+      "Documentation, https://requests.readthedocs.io",
+      "Source, https://github.com/psf/requests"
+    ]
+  },
+  {
+    "name": "tensorflow-estimator",
+    "version": "2.15.0",
+    "wheel": "https://files.pythonhosted.org/packages/b6/c8/2f823c8958d5342eafc6dd3e922f0cc4fcf8c2e0460284cc462dae3b60a0/tensorflow_estimator-2.15.0-py2.py3-none-any.whl",
+    "sha256": "aedf21eec7fb2dc91150fc91a1ce12bc44dbb72278a08b58e79ff87c9e28f153",
+    "homepage": "https://www.tensorflow.org/",
+    "project_urls": []
+  },
+  {
+    "name": "tensorflow-io-gcs-filesystem",
+    "version": "0.37.1",
+    "wheel": "https://files.pythonhosted.org/packages/f3/48/47b7d25572961a48b1de3729b7a11e835b888e41e0203cca82df95d23b91/tensorflow_io_gcs_filesystem-0.37.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "9679b36e3a80921876f31685ab6f7270f3411a4cc51bc2847e80d0e4b5291e27",
+    "homepage": "https://github.com/tensorflow/io",
+    "project_urls": [
+      "Source, https://github.com/tensorflow/io",
+      "Bug Reports, https://github.com/tensorflow/io/issues",
+      "Documentation, https://tensorflow.org/io"
+    ]
+  },
+  {
+    "name": "termcolor",
+    "version": "3.3.0",
+    "wheel": "https://files.pythonhosted.org/packages/33/d1/8bb87d21e9aeb323cc03034f5eaf2c8f69841e40e4853c2627edf8111ed3/termcolor-3.3.0-py3-none-any.whl",
+    "sha256": "cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5",
+    "homepage": null,
+    "project_urls": [
+      "Changelog, https://github.com/termcolor/termcolor/releases",
+      "Homepage, https://github.com/termcolor/termcolor",
+      "Source, https://github.com/termcolor/termcolor"
+    ]
+  },
+  {
+    "name": "typing_extensions",
+    "version": "4.16.0",
+    "wheel": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+    "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+    "homepage": null,
+    "project_urls": [
+      "Bug Tracker, https://github.com/python/typing_extensions/issues",
+      "Changes, https://github.com/python/typing_extensions/blob/main/CHANGELOG.md",
+      "Documentation, https://typing-extensions.readthedocs.io/",
+      "Home, https://github.com/python/typing_extensions",
+      "Q & A, https://github.com/python/typing/discussions",
+      "Repository, https://github.com/python/typing_extensions"
+    ]
+  },
+  {
+    "name": "wrapt",
+    "version": "1.14.2",
+    "wheel": "https://files.pythonhosted.org/packages/f1/95/5e261ed720bdddf9bbfea2b9bbd30bd03e298b02267333a231592a0cef7b/wrapt-1.14.2-cp310-cp310-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl",
+    "sha256": "851ded3662733bab093297a0adb844c71e7754b8c144f76bb569ac6544a7c27a",
+    "homepage": "https://github.com/GrahamDumpleton/wrapt",
+    "project_urls": [
+      "Bug Tracker, https://github.com/GrahamDumpleton/wrapt/issues/",
+      "Changelog, https://wrapt.readthedocs.io/en/latest/changes.html",
+      "Documentation, https://wrapt.readthedocs.io/"
+    ]
+  },
+  {
+    "name": "decorator",
+    "version": "5.3.1",
+    "wheel": "https://files.pythonhosted.org/packages/05/7f/798705f5296a58ca505d600456748d1be48078eac8a7050d8a98bc9edb89/decorator-5.3.1-py3-none-any.whl",
+    "sha256": "f47fe6fdbd2edd623ecfe36875d37aba411624e2670dd395dddae1358689bb3c",
+    "homepage": null,
+    "project_urls": []
+  },
+  {
+    "name": "dm-env",
+    "version": "1.6",
+    "wheel": "https://files.pythonhosted.org/packages/08/7e/36d548040e61337bf9182637a589c44da407a47a923ee88aec7f0e89867c/dm_env-1.6-py3-none-any.whl",
+    "sha256": "0eabb6759dd453b625e041032f7ae0c1e87d4eb61b6a96b9ca586483837abf29",
+    "homepage": null,
+    "project_urls": []
+  },
+  {
+    "name": "glfw",
+    "version": "2.10.2",
+    "wheel": "https://files.pythonhosted.org/packages/69/84/1b98671314ea5f40397586b6cd14db913de3196333be558fdc177e61708f/glfw-2.10.2-py2.py3-none-manylinux_2_28_x86_64.whl",
+    "sha256": "b860de3ca0686182483f98f3ddd12e660acf25b3e0d521450ec9a3f999f72a65",
+    "homepage": "https://github.com/FlorianRhiem/pyGLFW",
+    "project_urls": []
+  },
+  {
+    "name": "labmaze",
+    "version": "1.0.6",
+    "wheel": "https://files.pythonhosted.org/packages/4d/93/abac7877e1d7de984a2f0f5be561ff0dc795ae7e22595cf2f7c7032cd27e/labmaze-1.0.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "4e6433bd49bc541791de8191040526fddfebb77151620eb04203453f43ee486a",
+    "homepage": null,
+    "project_urls": []
+  },
+  {
+    "name": "lxml",
+    "version": "6.1.3",
+    "wheel": "https://files.pythonhosted.org/packages/a1/ce/dbea34cd115ae9b8ef53816daa912563615adf4daed42531878a2fb29c77/lxml-6.1.3-cp310-cp310-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "f6449672f9c93316deb5e2839e18931f468670e44d5bd9b1301a5a9655d45c07",
+    "homepage": "https://lxml.de/",
+    "project_urls": [
+      "Source, https://github.com/lxml/lxml",
+      "Bug Tracker, https://bugs.launchpad.net/lxml"
+    ]
+  },
+  {
+    "name": "tqdm",
+    "version": "4.70.1",
+    "wheel": "https://files.pythonhosted.org/packages/a7/03/921a3d3c75785aca9ebfbfcabfbc3a1be12e2ab5265deb026d55a5a3f83e/tqdm-4.70.1-py3-none-any.whl",
+    "sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73",
+    "homepage": null,
+    "project_urls": [
+      "homepage, https://tqdm.github.io",
+      "repository, https://github.com/tqdm/tqdm",
+      "changelog, https://tqdm.github.io/releases",
+      "wiki, https://github.com/tqdm/tqdm/wiki"
+    ]
+  },
+  {
+    "name": "attrs",
+    "version": "26.1.0",
+    "wheel": "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl",
+    "sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+    "homepage": null,
+    "project_urls": [
+      "Documentation, https://www.attrs.org/",
+      "Changelog, https://www.attrs.org/en/stable/changelog.html",
+      "GitHub, https://github.com/python-attrs/attrs",
+      "Funding, https://github.com/sponsors/hynek",
+      "Tidelift, https://tidelift.com/subscription/pkg/pypi-attrs?utm_source=pypi-attrs&utm_medium=pypi"
+    ]
+  },
+  {
+    "name": "certifi",
+    "version": "2026.7.22",
+    "wheel": "https://files.pythonhosted.org/packages/0b/a7/71ac2cff56fec219ed242bb11b8efb69fcc4bec75db06fb7bfe35de520e6/certifi-2026.7.22-py3-none-any.whl",
+    "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+    "homepage": "https://github.com/certifi/python-certifi",
+    "project_urls": [
+      "Source, https://github.com/certifi/python-certifi"
+    ]
+  },
+  {
+    "name": "charset-normalizer",
+    "version": "3.5.1",
+    "wheel": "https://files.pythonhosted.org/packages/32/cd/4f564b8f132de25db594efc706897069f016790cea63a5669c9df2675f64/charset_normalizer-3.5.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "96eefc178f8636b9c760c5829345307fd81cfae9ab1e80997dbddeb0f54ee9a3",
+    "homepage": null,
+    "project_urls": [
+      "Changelog, https://github.com/jawah/charset_normalizer/blob/master/CHANGELOG.md",
+      "Documentation, https://charset-normalizer.readthedocs.io/",
+      "Code, https://github.com/jawah/charset_normalizer",
+      "Issue tracker, https://github.com/jawah/charset_normalizer/issues"
+    ]
+  },
+  {
+    "name": "google-auth",
+    "version": "2.58.0",
+    "wheel": "https://files.pythonhosted.org/packages/59/13/477d90d09591b3938b45c4e11f4d8a51291682112cb5efcac961e815d562/google_auth-2.58.0-py3-none-any.whl",
+    "sha256": "8a9c4645bb4c8e91668fb1934b95ae6a8687084232753639220ba9bf04a1610d",
+    "homepage": "https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth",
+    "project_urls": []
+  },
+  {
+    "name": "google-auth-oauthlib",
+    "version": "1.4.1",
+    "wheel": "https://files.pythonhosted.org/packages/6f/32/ebf82c6ae8c1caf975b3153d763f3b765dddafa01d2a6c2a142fde28bda7/google_auth_oauthlib-1.4.1-py3-none-any.whl",
+    "sha256": "a1be43ec69fe563ac9b2c4d6fc4334b323b21cbdc59a638b5fa34dd4d5a2a348",
+    "homepage": "https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth-oauthlib",
+    "project_urls": []
+  },
+  {
+    "name": "idna",
+    "version": "3.19",
+    "wheel": "https://files.pythonhosted.org/packages/57/b0/0e52c878c53f245edd3a11020f20979b3f490f245af532c7cae3027754b5/idna-3.19-py3-none-any.whl",
+    "sha256": "815e7be7a7806d54abb586dc943addc79e8b2ee16915059658cbeff4b1b43bf4",
+    "homepage": null,
+    "project_urls": [
+      "Changelog, https://github.com/kjd/idna/blob/master/HISTORY.md",
+      "Issue tracker, https://github.com/kjd/idna/issues",
+      "Source, https://github.com/kjd/idna"
+    ]
+  },
+  {
+    "name": "Markdown",
+    "version": "3.10.3",
+    "wheel": "https://files.pythonhosted.org/packages/64/69/4a5af2bc115a9a33fefe51709749de8262be3f9ba063d1753a837cdbc49c/markdown-3.10.3-py3-none-any.whl",
+    "sha256": "fa6c92a00a4a3c98b22728c64a935ae1928250ae65058a6ded814d2cc29a4cea",
+    "homepage": null,
+    "project_urls": [
+      "Homepage, https://Python-Markdown.github.io/",
+      "Documentation, https://Python-Markdown.github.io/",
+      "Repository, https://github.com/Python-Markdown/markdown",
+      "Issue Tracker, https://github.com/Python-Markdown/markdown/issues",
+      "Changelog, https://python-markdown.github.io/changelog/"
+    ]
+  },
+  {
+    "name": "tensorboard-data-server",
+    "version": "0.7.2",
+    "wheel": "https://files.pythonhosted.org/packages/73/c6/825dab04195756cf8ff2e12698f22513b3db2f64925bdd41671bfb33aaa5/tensorboard_data_server-0.7.2-py3-none-manylinux_2_31_x86_64.whl",
+    "sha256": "ef687163c24185ae9754ed5650eb5bc4d84ff257aabdc33f0cc6f74d8ba54530",
+    "homepage": "https://github.com/tensorflow/tensorboard/tree/master/tensorboard/data/server",
+    "project_urls": []
+  },
+  {
+    "name": "urllib3",
+    "version": "2.7.0",
+    "wheel": "https://files.pythonhosted.org/packages/7f/3e/5db95bcf282c52709639744ca2a8b149baccf648e39c8cc87553df9eae0c/urllib3-2.7.0-py3-none-any.whl",
+    "sha256": "9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897",
+    "homepage": null,
+    "project_urls": [
+      "Changelog, https://github.com/urllib3/urllib3/blob/main/CHANGES.rst",
+      "Documentation, https://urllib3.readthedocs.io",
+      "Code, https://github.com/urllib3/urllib3",
+      "Issue tracker, https://github.com/urllib3/urllib3/issues"
+    ]
+  },
+  {
+    "name": "Werkzeug",
+    "version": "3.1.8",
+    "wheel": "https://files.pythonhosted.org/packages/93/8c/2e650f2afeb7ee576912636c23ddb621c91ac6a98e66dc8d29c3c69446e1/werkzeug-3.1.8-py3-none-any.whl",
+    "sha256": "63a77fb8892bf28ebc3178683445222aa500e48ebad5ec77b0ad80f8726b1f50",
+    "homepage": null,
+    "project_urls": [
+      "Changes, https://werkzeug.palletsprojects.com/page/changes/",
+      "Chat, https://discord.gg/pallets",
+      "Documentation, https://werkzeug.palletsprojects.com/",
+      "Donate, https://palletsprojects.com/donate",
+      "Source, https://github.com/pallets/werkzeug/"
+    ]
+  },
+  {
+    "name": "etils",
+    "version": "1.13.0",
+    "wheel": "https://files.pythonhosted.org/packages/e7/98/87b5946356095738cb90a6df7b35ff69ac5750f6e783d5fbcc5cb3b6cbd7/etils-1.13.0-py3-none-any.whl",
+    "sha256": "d9cd4f40fbe77ad6613b7348a18132cc511237b6c076dbb89105c0b520a4c6bb",
+    "homepage": null,
+    "project_urls": [
+      "changelog, https://github.com/google/etils/blob/main/CHANGELOG.md",
+      "documentation, https://etils.readthedocs.io",
+      "homepage, https://github.com/google/etils",
+      "repository, https://github.com/google/etils"
+    ]
+  },
+  {
+    "name": "fsspec",
+    "version": "2026.7.0",
+    "wheel": "https://files.pythonhosted.org/packages/fd/3c/6a2bf344106328fd04963664a60b9bb6496fc25df8e962fcdc1367285fb9/fsspec-2026.7.0-py3-none-any.whl",
+    "sha256": "b57ddbafedfaef7018c1ecab32aa200a9d7ca26b77965f64e48b70061249d279",
+    "homepage": null,
+    "project_urls": [
+      "Changelog, https://filesystem-spec.readthedocs.io/en/latest/changelog.html",
+      "Documentation, https://filesystem-spec.readthedocs.io/en/latest/",
+      "Homepage, https://github.com/fsspec/filesystem_spec"
+    ]
+  },
+  {
+    "name": "importlib_resources",
+    "version": "7.1.0",
+    "wheel": "https://files.pythonhosted.org/packages/8a/db/55a262f3606bebcae07cc14095338471ad7c0bbcaa37707e6f0ee49725b7/importlib_resources-7.1.0-py3-none-any.whl",
+    "sha256": "1bd7b48b4088eddb2cd16382150bb515af0bd2c70128194392725f82ad2c96a1",
+    "homepage": null,
+    "project_urls": [
+      "Source, https://github.com/python/importlib_resources"
+    ]
+  },
+  {
+    "name": "zipp",
+    "version": "4.1.0",
+    "wheel": "https://files.pythonhosted.org/packages/3a/13/547360d81e6d88d58492968ffda9f9542854f11310ee556fef14260cc886/zipp-4.1.0-py3-none-any.whl",
+    "sha256": "25ad4e16390cd314347dd8f1de67a2ac538ae658ed4ab9db16029c07c188e97f",
+    "homepage": null,
+    "project_urls": [
+      "Source, https://github.com/jaraco/zipp"
+    ]
+  },
+  {
+    "name": "cryptography",
+    "version": "50.0.1",
+    "wheel": "https://files.pythonhosted.org/packages/8c/eb/5d7124083e8d8cda8f5b348f544b71ad6f707ad63193758ef4d8e569da02/cryptography-50.0.1-cp39-abi3-manylinux_2_34_x86_64.whl",
+    "sha256": "9dde0a357190eb3b1da1bb9ab750e9c85cba82ca5977aa0836cbb94e92611239",
+    "homepage": null,
+    "project_urls": [
+      "changelog, https://cryptography.io/en/latest/changelog/",
+      "documentation, https://cryptography.io/",
+      "homepage, https://github.com/pyca/cryptography",
+      "issues, https://github.com/pyca/cryptography/issues",
+      "source, https://github.com/pyca/cryptography/"
+    ]
+  },
+  {
+    "name": "MarkupSafe",
+    "version": "3.0.3",
+    "wheel": "https://files.pythonhosted.org/packages/af/cd/ce6e848bbf2c32314c9b237839119c5a564a59725b53157c856e90937b7a/markupsafe-3.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "f42d0984e947b8adf7dd6dde396e720934d12c506ce84eea8476409563607591",
+    "homepage": null,
+    "project_urls": [
+      "Donate, https://palletsprojects.com/donate",
+      "Documentation, https://markupsafe.palletsprojects.com/",
+      "Changes, https://markupsafe.palletsprojects.com/page/changes/",
+      "Source, https://github.com/pallets/markupsafe/",
+      "Chat, https://discord.gg/pallets"
+    ]
+  },
+  {
+    "name": "pyasn1_modules",
+    "version": "0.4.2",
+    "wheel": "https://files.pythonhosted.org/packages/47/8d/d529b5d697919ba8c11ad626e835d4039be708a35b0d22de83a269a6682c/pyasn1_modules-0.4.2-py3-none-any.whl",
+    "sha256": "29253a9207ce32b64c3ac6600edc75368f98473906e8fd1043bd6b5b1de2c14a",
+    "homepage": "https://github.com/pyasn1/pyasn1-modules",
+    "project_urls": [
+      "Source, https://github.com/pyasn1/pyasn1-modules",
+      "Issues, https://github.com/pyasn1/pyasn1-modules/issues",
+      "Changelog, https://github.com/pyasn1/pyasn1-modules/blob/master/CHANGES.txt"
+    ]
+  },
+  {
+    "name": "requests-oauthlib",
+    "version": "2.0.0",
+    "wheel": "https://files.pythonhosted.org/packages/3b/5d/63d4ae3b9daea098d5d6f5da83984853c1bbacd5dc826764b249fe119d24/requests_oauthlib-2.0.0-py2.py3-none-any.whl",
+    "sha256": "7dd8a5c40426b779b0868c404bdef9768deccf22749cde15852df527e6269b36",
+    "homepage": "https://github.com/requests/requests-oauthlib",
+    "project_urls": []
+  },
+  {
+    "name": "cffi",
+    "version": "2.1.1",
+    "wheel": "https://files.pythonhosted.org/packages/75/77/60bebf6f818bec84210ac5b6979ce4eeadce6fbbaabc9c7ab23e506d1ce5/cffi-2.1.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "sha256": "194cffa889098ced9976c3fc6340305e43f6303657d298da55366907c05c22d6",
+    "homepage": null,
+    "project_urls": [
+      "Documentation, https://cffi.readthedocs.io/",
+      "Changelog, https://cffi.readthedocs.io/en/latest/whatsnew.html",
+      "Download, https://github.com/python-cffi/cffi/releases",
+      "Contact, https://groups.google.com/forum/#!forum/python-cffi",
+      "Source Code, https://github.com/python-cffi/cffi",
+      "Issue Tracker, https://github.com/python-cffi/cffi/issues"
+    ]
+  },
+  {
+    "name": "oauthlib",
+    "version": "3.3.1",
+    "wheel": "https://files.pythonhosted.org/packages/be/9c/92789c596b8df838baa98fa71844d84283302f7604ed565dafe5a6b5041a/oauthlib-3.3.1-py3-none-any.whl",
+    "sha256": "88119c938d2b8fb88561af5f6ee0eec8cc8d552b7bb1f712743136eb7523b7a1",
+    "homepage": "https://github.com/oauthlib/oauthlib",
+    "project_urls": []
+  },
+  {
+    "name": "pyasn1",
+    "version": "0.6.4",
+    "wheel": "https://files.pythonhosted.org/packages/9a/3b/6163796d69c3977d1e4287bea4a6979161cbbdd170ebb430511e8e1999ce/pyasn1-0.6.4-py3-none-any.whl",
+    "sha256": "deda9277cfd454080ec40b207fb6df82206a3a2688735233cdcd8d3d565f088b",
+    "homepage": null,
+    "project_urls": [
+      "Homepage, https://github.com/pyasn1/pyasn1",
+      "Documentation, https://pyasn1.readthedocs.io",
+      "Source, https://github.com/pyasn1/pyasn1",
+      "Issues, https://github.com/pyasn1/pyasn1/issues",
+      "Changelog, https://pyasn1.readthedocs.io/en/latest/changelog.html"
+    ]
+  },
+  {
+    "name": "pycparser",
+    "version": "3.0",
+    "wheel": "https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl",
+    "sha256": "b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992",
+    "homepage": null,
+    "project_urls": [
+      "Homepage, https://github.com/eliben/pycparser"
+    ]
+  },
+  {
+    "name": "setuptools",
+    "version": "79.0.1",
+    "wheel": "https://files.pythonhosted.org/packages/0d/6d/b4752b044bf94cb802d88a888dc7d288baaf77d7910b7dedda74b5ceea0c/setuptools-79.0.1-py3-none-any.whl",
+    "sha256": "e147c0549f27767ba362f9da434eab9c5dc0045d5304feb602a0af001089fc51",
+    "homepage": null,
+    "project_urls": [
+      "Source, https://github.com/pypa/setuptools",
+      "Documentation, https://setuptools.pypa.io/",
+      "Changelog, https://setuptools.pypa.io/en/stable/history.html"
+    ]
+  }
+]

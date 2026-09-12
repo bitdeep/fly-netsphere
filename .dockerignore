@@ -1,0 +1,6 @@
+out
+scratch
+data/*.zip
+.git
+__pycache__
+*.pyc

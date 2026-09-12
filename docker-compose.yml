@@ -1,0 +1,23 @@
+services:
+  fly:
+    build: .
+    working_dir: /app
+    volumes:
+      - .:/app
+      - warp-cache:/root/.cache/warp
+    environment:
+      MUJOCO_GL: egl
+      MUJOCO_EGL_DEVICE_ID: "0"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: graphics,compute,utility
+      TF_CPP_MIN_LOG_LEVEL: "2"
+      PYTHONPATH: /app/flybody
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      TF_NUM_INTRAOP_THREADS: "1"
+      TF_NUM_INTEROP_THREADS: "1"
+    gpus: all
+    command: bash scripts/simulate_city.sh
+
+volumes:
+  warp-cache:

@@ -1,0 +1,23 @@
+# Simulation output and scratch space
+out/
+scratch/
+
+# Upstream sources and data, fetched by scripts/fetch_flybody.sh and scripts/fetch_data.sh
+flybody/
+data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local notes and agent/session files (never published)
+*.local.md
+AGENTS.md
+CLAUDE.md
+HEY.md
+GEMINI.md
+.claude/
+.agents/
+.codex/
+.resume
