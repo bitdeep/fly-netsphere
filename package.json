@@ -1,0 +1,13 @@
+{
+  "name": "fly-netsphere-browser",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "check": "node --check web/environment.js && node --check web/fly.js && node --check web/neural.js && node --check web/dev-reload.js"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  }
+}

@@ -1,0 +1,9 @@
+# Extend the locally built, locked environment; no neural tooling in the viewer.
+FROM fly-environment:0.1.0
+COPY requirements.neural-tools.lock /app/
+RUN pip install --no-cache-dir --only-binary=:all: --require-hashes \
+      -r /app/requirements.neural-tools.lock && pip check
+ENV MPLCONFIGDIR=/tmp/matplotlib \
+    OPENBLAS_NUM_THREADS=1 \
+    OMP_NUM_THREADS=1
+CMD ["python", "scripts/prepare_neural_reference.py"]

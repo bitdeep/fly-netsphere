@@ -1,0 +1,7 @@
+packages:
+  - .
+minimumReleaseAge: 10080
+blockExoticSubdeps: true
+ignoreScripts: true
+strictDepBuilds: true
+packageImportMethod: clone

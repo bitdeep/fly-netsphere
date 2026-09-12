@@ -1,8 +1,14 @@
 # fly-netsphere
 
-**A physics-simulated fruit fly flying through a BLAME!-inspired megastructure.**
+**A connectome reference lab and a physical fruit fly in a BLAME!-inspired megastructure.**
 
-The animal is the anatomically detailed [flybody](https://github.com/TuragaLab/flybody) model of *Drosophila melanogaster* (Google DeepMind and HHMI Janelia, *Nature* 2025). Its pretrained flight controller runs on CUDA, MuJoCo Warp integrates the body and the wing aerodynamics at 20 kHz, and a geometric navigator steers the fly through a procedurally built, fully collidable interior: the NETSPHERE. Every frame of the recording comes from the integrated physical state. Nothing is composited, keyframed or teleported.
+Explore the **NETSPHERE** in a local browser, inspect one anatomical flybody animal,
+and stimulate a **127,400-neuron FlyWire reference model** while watching measured
+neural activity. The browser currently keeps neural signals and body actuators
+disconnected. [Open the development environment](#interactive-environment-in-the-browser)
+or read the [neural model and its limits](docs/neural-reference.md).
+
+The animal is the anatomically detailed [flybody](https://github.com/TuragaLab/flybody) model of *Drosophila melanogaster* (Google DeepMind and HHMI Janelia, *Nature* 2025). In the separate recorded-flight pipeline, its pretrained controller runs on CUDA, MuJoCo Warp integrates the body and wing aerodynamics at 20 kHz, and a geometric navigator steers the fly through the collidable interior. Every frame of those recordings comes from the integrated physical state.
 
 ![A fruit fly in flight beside a pillar of the NETSPHERE](docs/media/hero.png)
 
@@ -17,7 +23,9 @@ The full 60-second take, its metrics and the validation files are attached to th
 
 - It **is** whole-body physics: joints, wings with ellipsoid fluid forces, and the official DMPO flight policy (wingbeat pattern generator plus a residual MLP) driving the actuators.
 - It **is** a real 3D world: walls, pillars, ducts, cables and walkways with collision in the same MuJoCo model that integrates the fly. The camera moves through that space.
-- It is **not** a brain simulation. No connectome (MaleCNS, FlyWire) is involved.
+- The **recorded flight** uses the official MLP policy. The browser development lab
+  also runs stimulus-response trials on the published FlyWire 630 connectome;
+  those neural signals are **not yet connected to the body's muscles**.
 - The navigator is **not** learned vision. It reads the known world geometry and the measured position at 100 Hz and picks turns and climbs with clearance for wings and body. It only changes the reference command; it never writes the animal's pose or velocity.
 
 ## Results
@@ -67,6 +75,49 @@ verify_take.py       independent checks: duration, decoded frames, clearance, ha
 - **Timing.** The video clock is the physics clock. A run that falls or touches the world is rejected and its diagnostics are kept. No episode is stretched or restarted.
 
 ## Quick start
+
+### Interactive environment in the browser
+
+The local browser observatory contains **one passive flybody animal**, selectable
+with a close-up orbit camera, plus three city viewpoints and a gravity/contact
+experiment. Its **neural controller is disconnected and actuator drive disabled**:
+it settles physically, with no autonomous walking or flight policy.
+The **Neural activity** panel runs a separate FlyWire 630 reference assay with
+127,400 neurons and all 14,687,178 stored directed connections. It shows calculated
+spikes, selected real connections and the workflow up to the disconnected muscles.
+Stimulate antennal neurons, compare a baseline or block sensory output.
+Three.js renders measured body poses on demand; native MuJoCo sleep reduces idle
+work. The backend is capped at 2 CPUs and 1 GiB. The browser requests
+high-performance GPU graphics and targets 30 FPS while moving, with bounded
+resolution; backend physics and neural computation remain on the CPU.
+[Anatomy preparation, controls and limitations](docs/browser-environment.md) ·
+[Neural preparation, numerical validation and limitations](docs/neural-reference.md).
+
+```bash
+pnpm-docker install --frozen-lockfile  # provisioned Socket-protected Docker launcher
+scripts/fetch_flybody.sh
+docker compose --profile dev build environment-dev
+mkdir -p out/browser-fly
+docker compose --profile dev run --rm --no-deps --user "$(id -u):$(id -g)" \
+  -v "$PWD/out/browser-fly:/cache" environment-dev \
+  python scripts/prepare_browser_fly.py --output /cache
+docker compose --profile dev up -d --no-build environment-dev
+# Open http://localhost:8089 on the same machine.
+```
+
+There is **one development stack**, on port 8089. Frontend edits reload the page;
+Python edits restart the backend inside Docker. Code is mounted from this checkout.
+No host runtime or watcher is needed. Restarting the backend resets the development
+simulation and current neural trial; a frontend reload preserves backend state.
+The neural panel requires the separately prepared, numerically validated cache.
+
+This uses the existing Python image and a pinned, single-package frontend.
+It is served locally, with no external CDN. The flight-recording commands below
+remain separate from the browser environment.
+The GPU recording service has an explicit `recording` profile; starting the
+development profile does not start it.
+
+### Recorded flight
 
 Requirements: Docker with the NVIDIA container runtime and an NVIDIA GPU (developed and validated on an RTX 4090). Nothing else is installed on the host; the fetch scripts use `curl`, `tar`, `unzip`, `patch` and `sha256sum`.
 
@@ -122,6 +173,14 @@ scripts/
   verify_take.py        independent acceptance checks on states, geometry and video
   verify_avoidance.py   compare baseline, shifted-obstacle and avoidance-off runs
   city_world.py         procedural collidable megastructure
+  serve_environment.py local browser service, one passive fly and live gravity test
+  dev_environment.py   container-owned backend watcher; one dev stack on port 8089
+  neural_reference.py  incremental LIF dynamics over the full FlyWire 630 graph
+  neural_lab.py        bounded on-demand trials and measured activity telemetry
+  fetch_neural_reference.py, prepare_neural_reference.py, validate_neural_reference.py
+  passive_fly.py       cached anatomy attachment, disabled actuator drive
+  prepare_browser_fly.py bounded anatomy preparation, full-resolution mass properties
+  test_environment.py  physical contact, sleep/wake, state isolation and telemetry checks
   city_navigation.py    receding-horizon geometric navigator
   flight_cuda.py        controller and physics on CUDA (MuJoCo Warp)
   flight_mlp.py         NumPy reference of the flight policy
@@ -135,6 +194,8 @@ scripts/
   render_fly.py, fly_in_the_city.py, assemble_blame.py   earlier experiments, kept for reference
 patches/                flybody plotting imports become lazy (no matplotlib/IPython in the image)
 docs/                   validation reports, roadmap, dependency provenance, media
+web/                    Three.js observatory, free camera and simulation controls
+package.json, pnpm-lock.yaml   pinned browser dependency (Socket-protected installation)
 Dockerfile, docker-compose.yml, requirements.txt, requirements.lock
 ```
 
@@ -146,6 +207,11 @@ Dockerfile, docker-compose.yml, requirements.txt, requirements.lock
 - flybody is fetched at commit `d015e9b` with a verified tarball hash. The only local change is [one patch](patches/flybody-lazy-plot-imports.patch) that defers the matplotlib and IPython imports so the package loads without them.
 - Policies and the flight dataset come from the flybody Figshare deposit ([10.25378/janelia.25309105](https://doi.org/10.25378/janelia.25309105)) and are hash-checked after download.
 - Every `metrics.json` records the SHA-256 of the scripts, the checkpoint, the recorded states and the compiled model, so a take can be traced to the exact code that produced it.
+- GitHub CI checks Python, shell and browser-module syntax, verifies both Python
+  dependency locks and applies the anatomy import patch to the pinned upstream
+  source. It runs on pull requests and `main`; it does not allocate a GPU or
+  download the full neural dataset. Physical and neural comparisons run locally
+  in the bounded Docker environments described above.
 
 ## Roadmap
 
@@ -155,6 +221,7 @@ Ideas after the validated minute, in order of preference: a vertical shaft cross
 
 - flybody: Vaxenburg et al., *Whole-body physics simulation of fruit fly locomotion*, Nature 643, 1312–1320 (2025). [Paper](https://www.nature.com/articles/s41586-025-09029-4) · [Code](https://github.com/TuragaLab/flybody) (Apache-2.0) · [Data](https://doi.org/10.25378/janelia.25309105).
 - [MuJoCo](https://github.com/google-deepmind/mujoco), [MuJoCo Warp](https://github.com/google-deepmind/mujoco_warp), [NVIDIA Warp](https://github.com/NVIDIA/warp) and [dm_control](https://github.com/google-deepmind/dm_control).
+- Neural reference: [Shiu and Spiller's Drosophila brain model](https://github.com/philshiu/Drosophila_brain_model), using the published FlyWire 630 graph. MIT notice in [licenses/drosophila-brain-model-MIT.txt](licenses/drosophila-brain-model-MIT.txt). Brian2 is the numerical comparator; PyArrow prepares the graph.
 - The NETSPHERE is a fan homage to Tsutomu Nihei's *BLAME!*. Nothing here is official or affiliated.
 
 Licensed under the Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

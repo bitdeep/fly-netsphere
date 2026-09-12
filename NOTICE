@@ -13,5 +13,12 @@ Pretrained policies and the flight dataset come from the flybody Figshare
 deposit (https://doi.org/10.25378/janelia.25309105); see the deposit for
 its terms. They are downloaded by scripts/fetch_data.sh, not redistributed.
 
+The neural reference uses the published FlyWire 630 data, equations and
+antennal protocol from Drosophila_brain_model by Philip Shiu and Nico Spiller:
+https://github.com/philshiu/Drosophila_brain_model
+Copyright (c) 2023 Philip Shiu and Nico Spiller, MIT License.
+The full notice is in licenses/drosophila-brain-model-MIT.txt.
+Data are fetched separately and are not redistributed here.
+
 BLAME! is a work by Tsutomu Nihei (Kodansha). This is a fan homage and is
 not affiliated with or endorsed by its authors or publishers.
