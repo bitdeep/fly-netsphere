@@ -21,6 +21,7 @@ WALL_LIMIT = 90.
 CPU_LIMIT = 10.
 SPIKE_LIMIT = 100000
 MODES = ("stimulus", "baseline", "blocked")
+STIMULI = {"sugar": 21, "water": 18, "bitter": 21}
 SOURCE = Path(__file__).resolve().parents[1]/"data/neural-reference/figures.ipynb"
 
 
@@ -38,13 +39,14 @@ def feeding_identifiers(graph, source=SOURCE):
             if not isinstance(node, ast.Assign):
                 continue
             for target in node.targets:
-                if isinstance(target, ast.Name) and target.id in ("neu_sugar", "ids_mn9"):
+                if isinstance(target, ast.Name) and target.id in ("neu_sugar", "neu_water", "neu_bitter", "ids_mn9"):
                     values = ast.literal_eval(node.value)
                     if (not isinstance(values, list) or not all(type(x) is int for x in values)
                             or target.id in found and found[target.id] != values):
                         raise ValueError("Ambiguous feeding neuron identifiers")
                     found[target.id] = values
-    if len(found.get("neu_sugar", [])) != 21 or len(found.get("ids_mn9", [])) != 2:
+    if (any(len(found.get(f"neu_{name}", [])) != count for name, count in STIMULI.items())
+            or len(found.get("ids_mn9", [])) != 2):
         raise ValueError("Published feeding neuron groups are missing")
     # IDs exceed JavaScript's safe integer range. Expose their strings, not numbers.
     lookup = {int(value): i for i, value in enumerate(graph.ids)}
@@ -72,7 +74,9 @@ class MotorBridge:
             ids = feeding_identifiers(graph)
             if abs(model.opt.timestep-PARAMETERS.dt_ms/1000) > 1e-12:
                 raise ValueError("Motor link requires matching 0.1 ms clocks")
-            self.inputs = np.array([item["index"] for item in ids["neu_sugar"]])
+            self.input_groups = {name: np.array([item["index"] for item in ids[f"neu_{name}"]])
+                                 for name in STIMULI}
+            self.inputs = self.input_groups["sugar"]
             self.readouts = [{**item, "label": label} for item, label in
                              zip(ids["ids_mn9"], ("MN9 left", "MN9 right"))]
             self.motor_indices = np.array([item["index"] for item in self.readouts])
@@ -90,6 +94,8 @@ class MotorBridge:
             self.decay = float(np.exp(-PARAMETERS.dt_ms/FILTER_MS))
             self.descriptor = {
                 "available": True, "input_count": len(self.inputs), "inputs": ids["neu_sugar"],
+                "stimuli": [{"id": name, "input_count": count, "inputs": ids[f"neu_{name}"]}
+                            for name, count in STIMULI.items()],
                 "readouts": self.readouts, "rate_hz": RATE_HZ, "seed": SEED,
                 "total_ms": TICKS*PARAMETERS.dt_ms,
                 "stimulus_ms": STIMULUS_TICKS*PARAMETERS.dt_ms,
@@ -116,15 +122,20 @@ class MotorBridge:
             self.data.qfrc_applied[self.dof] = 0.
         self.model.tree_sleep_policy[self.fly_tree] = mujoco.mjtSleepPolicy.mjSLEEP_ALLOWED
 
-    def start(self, mode):
+    def start(self, mode, stimulus="sugar"):
         if not isinstance(mode, str) or mode not in MODES:
             raise ValueError("Motor mode must be stimulus, baseline or blocked")
+        if not isinstance(stimulus, str) or stimulus not in STIMULI:
+            raise ValueError("Taste stimulus must be sugar, water or bitter")
         if not self.descriptor["available"]:
             raise ValueError(self.state["error"])
         if self.active:
             raise ValueError("A motor trial is already running")
         self.disable()
         self.mode = mode
+        self.inputs = self.input_groups[stimulus]
+        self.sensory[:] = False
+        self.sensory[self.inputs] = True
         self.neurons = LIF(self.graph, self.inputs)
         self.events = poisson_events(self.inputs, TICKS,
                                      rate_hz=0 if mode == "baseline" else RATE_HZ,
@@ -138,7 +149,8 @@ class MotorBridge:
         self.peak_excursion = self.peak_force = 0.
         self.history = []
         self.state = {"revision": self.state["revision"]+1, "status": "running",
-                      "trial": self.state["trial"]+1, "mode": mode, "drive_enabled": False,
+                      "trial": self.state["trial"]+1, "mode": mode, "stimulus": stimulus,
+                      "input_count": len(self.inputs), "drive_enabled": False,
                       "history": [], "readouts": [], "simulated_ms": 0, "physical_ms": 0,
                       "total_spikes": 0, "downstream_spikes": 0,
                       "peak_excursion_deg": 0, "peak_force": 0}

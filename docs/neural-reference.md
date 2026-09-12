@@ -8,7 +8,7 @@ counts preserved. It uses the data and model parameters from
 This is not the newer MaleCNS dataset. Specimens and releases remain distinct.
 
 The antennal assay described here has its own clock, starts from neural rest
-and does not drive the body. A separate [sugar-response motor experiment](motor-link.md)
+and does not drive the body. A separate [taste-response motor experiment](motor-link.md)
 now couples the same full graph's MN9 neurons to the flybody rostrum through an
 explicit engineered adapter, with a shared neural/physical clock.
 World-to-sensory mapping, broader muscle control, walking and flight remain
@@ -16,7 +16,8 @@ future work; this is not a continuously embodied animal.
 
 ## Protocol and visible signals
 
-Open **Neural activity → Antennal reference assay** in the Fly 001 card.
+Choose **Antenna** in the action bar. Open **Neural activity → Antenna** to
+inspect the result; the action bar works with the inspector closed.
 Each antennal trial lasts 150 ms of neural
 time: 100 ms of input followed by 50 ms of recovery. The 146 published JON
 antennal neurons come from the CE, F and D groups in the reference notebook.
@@ -25,14 +26,15 @@ mechanics. A fixed seed (`20260912`) makes comparisons repeatable.
 
 | Control | Input | Intervention |
 |---|---|---|
-| Stimulate antennal neurons | 150 Hz per input neuron | Normal published connections |
+| Antenna | 150 Hz per input neuron | Normal published connections |
 | Baseline | No external input | Normal published connections |
-| Block sensory output | Same input events as stimulus | Zero outgoing weights from input neurons |
+| Block sensory | Same input events as stimulus | Zero outgoing weights from input neurons |
 
 Silencing follows the reference code's outgoing-weight intervention. It does not
-delete neurons. The JON neurons still spike in the blocked trial.
+delete neurons. The JON neurons still spike in the blocked trial. **Stop** cancels
+the current trial at the next bounded block; another trial starts fresh.
 
-The panel shows accumulated trial spikes, membrane voltages, a 5 ms binned
+The transparent panel shows accumulated trial spikes, membrane voltages, a 5 ms binned
 timeline and published aBN1, aDN1 and aDN2 readouts. The last two are descending
 neurons; aBN1 is an interneuron. The schematic displays 21 selected actual neurons
 and their connections, using no invented anatomical coordinates. The selection
@@ -40,11 +42,13 @@ does not prune the simulated graph. Node sizes/colors encode measured accumulate
 spikes and remain visible after completion; no decorative animation runs at rest.
 Excitatory/inhibitory edges show signed structural weights, not measured current
 on each connection.
+Hover, focus or tap the components and values for their interpretation, IDs and
+measured voltages. Point along the timeline to inspect a sample.
 
 The neural panel updates from the existing event stream without invalidating the
 3D scene. It redraws its diagram/timeline only after a changed sample, while open
 and visible. Muscle disconnection stays explicit in the antennal workflow;
-the sugar motor link has its own labeled workflow and measured body trace.
+the taste motor link has its own tab, labeled workflow and measured body trace.
 
 ## Model and numerical comparison
 

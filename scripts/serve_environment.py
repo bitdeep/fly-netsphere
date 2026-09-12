@@ -185,7 +185,9 @@ class Environment:
         with self.lock:
             if self.stop.is_set():
                 raise ValueError("The environment is stopping")
-            if action in ("neural_trial", "motor_trial") and set(command) == {"action", "mode"}:
+            if (action in ("neural_trial", "motor_trial")
+                    and (set(command) == {"action", "mode"}
+                         or action == "motor_trial" and set(command) == {"action", "mode", "stimulus"})):
                 if self.neural is None:
                     raise ValueError("The neural lab is not enabled in this environment")
                 if self.motor.active or self.neural.snapshot()["status"] == "running":
@@ -195,13 +197,16 @@ class Environment:
                         raise ValueError("Resume the physical simulation before starting a motor trial")
                     if self.data.tree_asleep[self.fly_tree] < 0:
                         raise ValueError("Let the fly settle before starting a motor trial")
-                    self.motor.start(command["mode"])
+                    self.motor.start(command["mode"], command.get("stimulus", "sugar"))
                     self.next_pose_time = 0.
                 else:
                     self.neural.start(command["mode"])
             elif action == "motor_stop" and set(command) == {"action"}:
                 if self.motor:
                     self.motor.finish()
+            elif action == "neural_stop" and set(command) == {"action"}:
+                if self.neural:
+                    self.neural.cancel_trial()
             elif action == "pause" and set(command) == {"action", "paused"}:
                 if not isinstance(command["paused"], bool):
                     raise ValueError("paused must be boolean")
@@ -460,6 +465,9 @@ class Handler(BaseHTTPRequestHandler):
             "/fly.js": ("web/fly.js", "text/javascript; charset=utf-8"),
             "/neural.js": ("web/neural.js", "text/javascript; charset=utf-8"),
             "/motor.js": ("web/motor.js", "text/javascript; charset=utf-8"),
+            "/actions.js": ("web/actions.js", "text/javascript; charset=utf-8"),
+            "/inspect.js": ("web/inspect.js", "text/javascript; charset=utf-8"),
+            "/actions.css": ("web/actions.css", "text/css; charset=utf-8"),
             "/neural.css": ("web/neural.css", "text/css; charset=utf-8"),
             "/dev-reload.js": ("web/dev-reload.js", "text/javascript; charset=utf-8"),
             "/style.css": ("web/style.css", "text/css; charset=utf-8"),

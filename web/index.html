@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#11191d">
-  <meta name="description" content="Observe a physical flybody fruit fly in the NETSPHERE. Stimulate the FlyWire connectome and inspect an experimental MN9-to-proboscis motor link with measured neural and physical responses.">
+  <meta name="description" content="Explore a physical fruit fly with sugar, water, bitter and antennal stimuli. A compact action bar and transparent neural inspector show measured FlyWire activity and an experimental proboscis motor link.">
   <title>NETSPHERE — Fly environment</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/actions.css">
   <script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script>
   <script type="module" src="/environment.js"></script>
 </head>
@@ -52,100 +53,103 @@
     </section>
 
     <section id="fly-panel" class="lab-panel" aria-label="Selected fly" hidden>
-      <div><span class="eyebrow">SELECTED · FLY 001</span><h2>A body in the world.</h2></div>
-      <p>Anatomical flybody model.<br><span id="fly-controller">Neural controller disconnected.</span></p>
-      <div class="specimen-facts"><span>Body state<strong id="fly-status">Settling</strong></span><span>Actuator drive<strong id="fly-drive">Off</strong></span><span>Body mass<strong id="fly-mass">—</strong></span></div>
-      <button id="neural-open" class="primary neural-launch" aria-controls="neural-panel" aria-expanded="false" hidden>Neural activity <span aria-hidden="true">↗</span></button>
-      <p class="probe-status">Drag to orbit · Scroll to zoom</p>
+      <span class="eyebrow" id="fly-controller" tabindex="0" data-tooltip="One anatomical flybody. Taste stimuli can drive the rostrum through an experimental neural adapter.">FLY 001 / PHYSICAL BODY</span>
+      <div class="specimen-facts">
+        <span tabindex="0" data-tooltip="Measured MuJoCo body state. The fly settles naturally between motor trials.">Body<strong id="fly-status">Settling</strong></span>
+        <span tabindex="0" data-tooltip="Only the rostrum actuator can be driven by the current motor link.">Drive<strong id="fly-drive">Off</strong></span>
+        <span tabindex="0" data-tooltip="Total mass of the anatomical flybody model.">Mass<strong id="fly-mass">—</strong></span>
+      </div>
+    </section>
+    <section id="fly-actions" class="action-bar" aria-label="Fly actions" hidden>
+      <div class="action-heading"><span>FLY 001</span><span id="action-status" role="status">Connecting…</span></div>
+      <div class="action-presets" role="group" aria-label="Stimuli and behaviors">
+        <button data-preset="sugar" aria-pressed="true" data-tooltip="Sugar sensory stimulus → full FlyWire graph → MN9 → proboscis. This models a feeding-initiation response, not eating or digestion."><span class="action-symbol" aria-hidden="true">♧</span>Feed</button>
+        <button data-preset="water" aria-pressed="false" data-tooltip="Stimulate 18 published water-sensing neurons. The same MN9-to-rostrum adapter reads the resulting spikes."><span class="action-symbol" aria-hidden="true">◊</span>Water</button>
+        <button data-preset="bitter" aria-pressed="false" data-tooltip="Stimulate 21 published bitter-sensing neurons. A neural response can occur without MN9 spikes or proboscis movement."><span class="action-symbol" aria-hidden="true">✧</span>Bitter</button>
+        <button data-preset="antenna" aria-pressed="false" data-tooltip="Stimulate 146 antennal sensory neurons and inspect aBN1/aDN1/aDN2. Neural readouts only: grooming muscles are not connected."><span class="action-symbol" aria-hidden="true">⌁</span>Antenna</button>
+        <button data-unlinked="wings" aria-disabled="true" data-tooltip="Not connected. Neural wingbeats need additional motor circuitry and a validated wing controller. This button does not run an animation or the separate MLP flight policy."><span class="action-symbol" aria-hidden="true">⋈</span>Wings<small>Not connected</small></button>
+        <button data-unlinked="walk" aria-disabled="true" data-tooltip="Not connected. Neural walking needs ventral nerve cord circuitry, leg coordination and a validated muscle mapping. The current FlyWire brain-to-body link controls only the rostrum."><span class="action-symbol" aria-hidden="true">⋔</span>Walk<small>Not connected</small></button>
+      </div>
+      <div class="action-tools">
+        <div role="group" aria-label="Compare selected stimulus">
+          <button id="action-baseline" data-tooltip="Run the selected protocol with no external input. This tests the baseline without resetting the physical fly.">Baseline</button>
+          <button id="action-block" data-tooltip="Repeat the selected taste stimulus with its motor link disabled. Antenna mode instead blocks outgoing sensory connections.">Block link</button>
+        </div>
+        <div role="group" aria-label="Observation and trial controls">
+          <button id="motor-focus" data-tooltip="Focus the observer on the proboscis. This moves only the camera.">Focus</button>
+          <button id="trial-stop" aria-disabled="true" data-tooltip="Stop the running trial. Motor actuation is disabled; the body settles under normal physics.">■ Stop</button>
+          <button id="neural-open" aria-controls="neural-panel" aria-expanded="false" data-tooltip="Show or hide the transparent neural inspector. Actions remain available in this bar.">Neural activity</button>
+        </div>
+      </div>
     </section>
     <aside id="neural-panel" class="neural-panel" aria-labelledby="neural-title" hidden>
       <div class="neural-heading">
-        <div><span class="eyebrow">CONNECTOME / REFERENCE LAB</span><h2 id="neural-title">Inside the signal.</h2></div>
+        <div><span class="eyebrow">CONNECTOME</span><h2 id="neural-title">Neural activity</h2></div>
         <button id="neural-close" class="icon-button" aria-label="Close neural activity">×</button>
       </div>
       <p id="neural-unavailable" role="status" hidden></p>
       <div id="neural-content">
-        <p id="neural-dataset" class="neural-source"></p>
-        <p id="neural-graph-size"></p>
-        <section aria-labelledby="motor-title">
-          <h3 id="motor-title">Brain → body · sugar response</h3>
+        <div class="neural-source"><span id="neural-dataset" tabindex="0" data-tooltip=""></span><span id="neural-graph-size" tabindex="0" data-tooltip=""></span></div>
+        <div class="neural-tabs" role="tablist" aria-label="Neural readout">
+          <button id="motor-tab" role="tab" aria-selected="true" aria-controls="motor-readout">Taste → body</button>
+          <button id="antenna-tab" role="tab" aria-selected="false" aria-controls="antenna-readout" tabindex="-1">Antenna</button>
+        </div>
+        <section id="motor-readout" role="tabpanel" aria-labelledby="motor-tab">
           <p id="motor-status" role="status">Loading motor link…</p>
           <div id="motor-controls">
-            <ol class="neural-workflow" aria-label="Sugar motor signal workflow">
-              <li>Sugar input<small>21 neurons</small></li>
-              <li id="motor-workflow-brain">Connectome<small>Full graph</small></li>
-              <li id="motor-workflow-mn9">MN9 pair<small>Motor spikes</small></li>
-              <li id="motor-workflow-body">Proboscis<small>Servo adapter</small></li>
+            <ol class="neural-workflow" aria-label="Taste motor signal workflow">
+              <li id="motor-input" tabindex="0" data-tooltip="Direct input to identified sensory neurons. No taste-receptor mechanics or food object is simulated.">Sugar<small>21 inputs</small></li>
+              <li id="motor-workflow-brain" tabindex="0" data-tooltip="All 127,400 neurons and 14,687,178 stored connections remain in the LIF simulation.">Connectome<small>Full graph</small></li>
+              <li id="motor-workflow-mn9" tabindex="0" data-tooltip="Measured spikes of the published left and right MN9 motor neurons.">MN9<small>Motor pair</small></li>
+              <li id="motor-workflow-body" tabindex="0" data-tooltip="An engineered 30 ms firing-rate filter drives the existing rostrum servo. This mapping is not a biologically calibrated muscle model.">Rostrum<small>Adapter</small></li>
             </ol>
-            <p class="neural-boundary">One experimental motor link. MN9 spikes drive the rostrum through an engineered adapter. World sensing, walking and flight are not connected.</p>
-            <p id="motor-protocol"></p>
-            <div class="neural-actions" role="group" aria-label="Motor trial">
-              <button data-motor-mode="stimulus">Stimulate sugar neurons</button>
-              <button data-motor-mode="baseline">Baseline · no input</button>
-              <button data-motor-mode="blocked">Block motor link</button>
-              <button id="motor-stop" disabled>Stop</button>
-              <button id="motor-focus">View proboscis</button>
-            </div>
-            <p id="motor-readiness" role="status"></p>
-            <progress id="motor-progress" max="500" value="0" aria-label="Coupled motor trial progress"></progress>
-            <div class="neural-timing"><span id="motor-time">0 ms brain / 0 ms body</span><span id="motor-wall">Runs on demand</span></div>
+            <progress id="motor-progress" max="500" value="0" tabindex="0" data-tooltip="A 500 ms shared-clock trial: 300 ms stimulus, then 200 ms recovery. Pause freezes both brain and body." aria-label="Coupled motor trial progress"></progress>
+            <div class="neural-timing"><span id="motor-time" tabindex="0" data-tooltip="">0 ms</span><span id="motor-wall" tabindex="0" data-tooltip="">On demand</span></div>
             <div class="neural-metrics">
-              <span><strong id="motor-mn9">—</strong>MN9 spikes · L / R</span>
-              <span><strong id="motor-excursion">—</strong>Peak joint movement</span>
-              <span><strong id="motor-downstream">—</strong>Downstream spikes</span>
+              <span tabindex="0" data-tooltip="Cumulative MN9 spikes, left / right. These are calculated neural events, not an animation."><strong id="motor-mn9">—</strong>MN9 · L / R</span>
+              <span tabindex="0" data-tooltip="Largest measured rostrum joint-angle change from the trial's initial physical state."><strong id="motor-excursion">—</strong>Movement</span>
+              <span tabindex="0" data-tooltip="Total spikes outside the directly stimulated sensory neurons."><strong id="motor-downstream">—</strong>Downstream</span>
             </div>
-            <p>Actuator drive: <strong id="motor-drive">Off</strong></p>
-            <canvas id="motor-timeline" width="420" height="142" role="img" aria-label="Measured MN9 cumulative spikes, adapter drive and rostrum joint angle over the shared neural and physical clock."></canvas>
-            <p>Measured samples every 5 ms. MN9 spikes use a cumulative scale; drive is 0–1; angle is in degrees. Dashed line: input ends. The trace stays visible after movement.</p>
+            <canvas id="motor-timeline" width="420" height="142" role="img" tabindex="0" data-tooltip="Hover along the trace to inspect 5 ms samples. MN9 is cumulative; drive is 0–1; angle is in degrees. Dashed line: input ends." aria-label="MN9 spikes, adapter drive and measured rostrum angle."></canvas>
+            <div class="neural-caption"><span class="neural-badge" tabindex="0" data-tooltip="One experimental motor link. World sensing, walking and flight are not connected.">Experimental link</span><span id="motor-drive" tabindex="0" data-tooltip="Current actuator authority. All actuators except the rostrum remain disabled.">Drive off</span></div>
           </div>
         </section>
-        <details class="antennal-details">
-          <summary>Antennal reference assay · separate clock</summary>
+        <section id="antenna-readout" role="tabpanel" aria-labelledby="antenna-tab" hidden>
         <p id="neural-status" role="status">Loading neural reference…</p>
         <ol class="neural-workflow" aria-label="Neural signal workflow">
-          <li>Stimulus<small>Direct input</small></li>
-          <li id="workflow-brain">Connectome<small>LIF model</small></li>
-          <li id="workflow-readout">Readouts<small>Neural spikes</small></li>
-          <li class="disconnected">Muscles<small>Disconnected</small></li>
+          <li tabindex="0" data-tooltip="146 JON antennal neurons receive 150 Hz input for 100 ms, followed by 50 ms recovery.">Antenna<small>146 inputs</small></li>
+          <li id="workflow-brain" tabindex="0" data-tooltip="The same complete FlyWire graph, with an independent neural clock for this assay.">Connectome<small>LIF</small></li>
+          <li id="workflow-readout" tabindex="0" data-tooltip="Measured aBN1, aDN1 and aDN2 spikes. The descending signals are not coupled to grooming muscles.">Readouts<small>Spikes</small></li>
+          <li class="disconnected" tabindex="0" data-tooltip="This antennal assay has no motor authority.">Muscles<small>Unlinked</small></li>
         </ol>
-        <p class="neural-boundary">This antennal assay reads neural activity only. It has its own clock and does not drive muscles.</p>
-        <h3>Antennal response</h3>
-        <p id="neural-protocol"></p>
-        <div class="neural-actions" role="group" aria-label="Neural trial">
-          <button data-neural-mode="stimulus">Stimulate antennal neurons</button>
-          <button data-neural-mode="baseline">Baseline · no input</button>
-          <button data-neural-mode="blocked">Block sensory output</button>
-        </div>
         <progress id="neural-progress" max="150" value="0" aria-label="Neural trial progress"></progress>
-        <div class="neural-timing"><span id="neural-time">0 / 150 ms neural time</span><span id="neural-wall">Runs on demand</span></div>
+        <div class="neural-timing"><span id="neural-time" tabindex="0" data-tooltip="This 150 ms antennal assay uses its own neural clock and does not drive the body.">0 / 150 ms</span><span id="neural-wall" tabindex="0" data-tooltip="">On demand</span></div>
         <div class="neural-metrics">
-          <span><strong id="neural-spikes">—</strong>Total trial spikes</span>
-          <span><strong id="neural-downstream">—</strong>Beyond input neurons</span>
-          <span><strong id="neural-active">—</strong>Neurons that spiked</span>
+          <span tabindex="0" data-tooltip="All spikes calculated during this antennal trial."><strong id="neural-spikes">—</strong>Spikes</span>
+          <span tabindex="0" data-tooltip="Spikes beyond the directly stimulated sensory neurons."><strong id="neural-downstream">—</strong>Downstream</span>
+          <span tabindex="0" data-tooltip="Number of distinct neurons that fired at least once."><strong id="neural-active">—</strong>Active neurons</span>
         </div>
-        <h3>Signal structure</h3>
-        <svg id="neural-graph" viewBox="0 0 430 294" role="img" aria-label="Selected FlyWire neurons and their directed connections. Node size and color show accumulated spikes.">
+        <svg id="neural-graph" viewBox="0 0 430 294" role="img" tabindex="0" data-tooltip="21 selected neurons and their actual connections, with schematic positions. The full simulated graph is not pruned. Node color and size encode cumulative trial spikes." aria-label="Selected FlyWire neurons and actual connections.">
           <defs>
             <marker id="neural-arrow" viewBox="0 0 8 8" refX="12" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#98bbaa"/></marker>
             <marker id="neural-stop" viewBox="0 0 8 8" refX="12" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M4 0V8" stroke="#d39e84" stroke-width="2"/></marker>
           </defs>
         </svg>
-        <div class="neural-legend"><span>→ Excitatory</span><span>⊣ Inhibitory</span></div>
-        <p id="neural-diagram-note"></p>
-        <h3>Measured activity</h3>
-        <canvas id="neural-timeline" width="420" height="146" role="img" aria-label="Spikes per 5 ms bin for sensory inputs, the downstream network and descending readouts. Each row uses its own scale."></canvas>
-        <p>Spikes per 5 ms bin · each row scaled separately. Dashed line: stimulus ends. Results remain visible after the trial.</p>
+        <div class="neural-legend" tabindex="0" data-tooltip="Signed structural synapse counts: green arrows are excitatory; dashed amber edges are inhibitory. These lines do not show measured current."><span>→ Excitatory</span><span>⊣ Inhibitory</span></div>
+        <canvas id="neural-timeline" width="420" height="146" role="img" tabindex="0" data-tooltip="Hover to inspect 5 ms spike bins. Each row has its own scale. Dashed line: input ends." aria-label="Antennal spikes per 5 ms bin."></canvas>
         <table class="neural-readout-table">
           <thead><tr><th scope="col">Readout</th><th scope="col">Trial spikes</th><th scope="col">Latest voltage</th></tr></thead>
           <tbody id="neural-readouts"></tbody>
         </table>
-        </details>
-        <p class="neural-footnote">Connectome-based simulation with a simplified neuron model. Numerical checks match Brian2; this does not establish biological equivalence or autonomous behavior. <a id="neural-provenance" target="_blank" rel="noopener noreferrer">Published model and data ↗</a></p>
+        <div class="neural-caption"><span class="neural-badge" tabindex="0" data-tooltip="The antennal assay calculates neural responses only. It has its own clock and no muscle coupling.">Neural only</span></div>
+        </section>
+        <div class="neural-caption neural-footnote"><span tabindex="0" data-tooltip="A simplified connectome-based LIF model. Numerical checks match Brian2 on the documented fixtures; this does not establish biological equivalence.">Model info ⓘ</span><a id="neural-provenance" target="_blank" rel="noopener noreferrer">Source ↗</a></div>
       </div>
     </aside>
     <button id="fly-marker" hidden aria-label="Select Fly 001">◎ <span>Fly 001</span></button>
     <div id="crosshair" aria-hidden="true"></div>
     <div id="toast" role="status" hidden></div>
+    <div id="inspector-tooltip" role="tooltip" hidden></div>
     <section id="loading" role="status"><span class="loader"></span><strong>Building the space</strong><span>Loading the City's physical geometry…</span></section>
 
     <footer>

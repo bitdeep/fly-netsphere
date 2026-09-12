@@ -1,4 +1,5 @@
 import { createMotorPanel } from './motor.js';
+import { sampleTooltip } from './inspect.js';
 
 const $ = (id) => document.getElementById(id);
 const svgNS = 'http://www.w3.org/2000/svg';
@@ -10,20 +11,35 @@ function svgElement(tag, attributes = {}) {
   return element;
 }
 
-export function createNeuralPanel(descriptor, motorDescriptor, command) {
+export function createNeuralPanel(descriptor, motorDescriptor, tooltips) {
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.href = '/neural.css';
   document.head.append(stylesheet);
   const panel = $('neural-panel'), open = $('neural-open');
-  const buttons = [...panel.querySelectorAll('[data-neural-mode]')];
-  let state = null, rendered = -1, pending = false, connected = true, motorBusy = false;
-  const motor = createMotorPanel(motorDescriptor, command, (value) => {
-    motorBusy = value;
-    controls();
-  });
+  let state = null, rendered = -1;
+  const motor = createMotorPanel(motorDescriptor, tooltips);
   const nodeElements = new Map(), readoutElements = new Map();
   open.hidden = false;
+  function select(kind) {
+    const isMotor = kind === 'motor';
+    $('motor-readout').hidden = !isMotor;
+    $('antenna-readout').hidden = isMotor;
+    for (const [id, selected] of [['motor-tab', isMotor], ['antenna-tab', !isMotor]]) {
+      $(id).setAttribute('aria-selected', String(selected));
+      $(id).tabIndex = selected ? 0 : -1;
+    }
+    motor.render(); render();
+  }
+  for (const [id, kind] of [['motor-tab', 'motor'], ['antenna-tab', 'antenna']]) {
+    $(id).addEventListener('click', () => select(kind));
+    $(id).addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      const other = kind === 'motor' ? 'antenna' : 'motor';
+      select(other); $(`${other}-tab`).focus();
+    });
+  }
 
   function show(value) {
     panel.hidden = !value;
@@ -46,11 +62,12 @@ export function createNeuralPanel(descriptor, motorDescriptor, command) {
     $('neural-unavailable').textContent = descriptor.error || 'Neural reference unavailable.';
     $('neural-unavailable').hidden = false;
     $('neural-content').hidden = true;
-    return { update() {}, setConnected() {} };
+    return { update() {}, select() {} };
   }
-  $('neural-dataset').textContent = `${descriptor.dataset} · ${format(descriptor.neuron_count)} neurons`;
-  $('neural-graph-size').textContent = `${format(descriptor.edge_count)} directed connections in the simulation`;
-  $('neural-protocol').textContent = `${descriptor.input_count} antennal neurons · ${descriptor.rate_hz} Hz input for ${descriptor.stimulus_ms} ms, then 50 ms recovery. Each trial starts from rest with the same seed.`;
+  $('neural-dataset').textContent = `${(descriptor.neuron_count / 1000).toFixed(1)}k neurons`;
+  $('neural-dataset').dataset.tooltip = `${descriptor.dataset}: ${format(descriptor.neuron_count)} neurons. The published FlyWire 630 specimen, not MaleCNS.`;
+  $('neural-graph-size').textContent = `${(descriptor.edge_count / 1e6).toFixed(2)}M links`;
+  $('neural-graph-size').dataset.tooltip = `All ${format(descriptor.edge_count)} stored directed connections, with signed synapse counts preserved.`;
   $('neural-provenance').href = `https://github.com/philshiu/Drosophila_brain_model/tree/${descriptor.reference_commit}`;
   const diagram = $('neural-graph');
   const nodes = descriptor.diagram.nodes;
@@ -78,6 +95,7 @@ export function createNeuralPanel(descriptor, motorDescriptor, command) {
     });
     const title = svgElement('title');
     title.textContent = `${edge.source} → ${edge.target}: ${edge.count} signed synapses`;
+    path.dataset.tooltip = title.textContent;
     path.append(title);
     diagram.append(path);
   }
@@ -90,39 +108,28 @@ export function createNeuralPanel(descriptor, motorDescriptor, command) {
     const title = svgElement('title');
     title.textContent = `FlyWire ID ${item.id}`;
     group.append(circle, label, title);
+    group.setAttribute('tabindex', '0');
+    group.dataset.tooltip = title.textContent;
     diagram.append(group);
     nodeElements.set(item.index, { group, circle, title, item });
   }
-  $('neural-diagram-note').textContent = `${nodes.length} selected neurons · actual connections, schematic positions. Color and size show accumulated trial spikes.`;
   for (const item of descriptor.readouts) {
     const row = document.createElement('tr');
     const name = document.createElement('th');
     name.scope = 'row';
     name.textContent = item.label;
     name.title = `${item.role} · FlyWire ID ${item.id}`;
+    row.tabIndex = 0;
+    row.dataset.tooltip = name.title;
     const spikes = document.createElement('td'), voltage = document.createElement('td');
     spikes.textContent = voltage.textContent = '—';
     row.append(name, spikes, voltage);
     $('neural-readouts').append(row);
-    readoutElements.set(item.index, { spikes, voltage });
+    readoutElements.set(item.index, { spikes, voltage, row, item });
   }
-
-  function controls() {
-    for (const button of buttons) {
-      button.disabled = !connected || pending || motorBusy || state?.status === 'running';
-      button.setAttribute('aria-pressed', String(state?.mode === button.dataset.neuralMode));
-    }
-  }
-  for (const button of buttons) {
-    button.addEventListener('click', async () => {
-      if (pending) return;
-      pending = true;
-      motor.setOtherBusy(true);
-      controls();
-      try { await command({ action: 'neural_trial', mode: button.dataset.neuralMode }); }
-      finally { pending = false; motor.setOtherBusy(state?.status === 'running'); controls(); }
-    });
-  }
+  sampleTooltip($('neural-timeline'), () => state?.history,
+    (bin) => `${bin.ms - 5}–${bin.ms} ms\nInput: ${bin.input} spikes\nNetwork: ${bin.network} spikes\nDescending readouts: ${bin.descending} spikes`,
+    tooltips.refresh, descriptor.total_ms);
 
   function drawHistory(history) {
     const canvas = $('neural-timeline'), context = canvas.getContext('2d');
@@ -157,15 +164,16 @@ export function createNeuralPanel(descriptor, motorDescriptor, command) {
   }
 
   function render() {
-    if (panel.hidden || document.hidden || !state || rendered === state.revision) return;
+    if (panel.hidden || $('antenna-readout').hidden || document.hidden || !state || rendered === state.revision) return;
     rendered = state.revision;
     const idle = state.status === 'idle';
     const names = { stimulus: 'Antennal stimulus', baseline: 'No input', blocked: 'Sensory output blocked' };
-    $('neural-status').textContent = idle ? 'Ready for a reference trial.'
+    $('neural-status').textContent = idle ? 'Antenna · Ready'
       : state.error || `${names[state.mode]} · ${state.status === 'running' ? 'Running' : state.status === 'complete' ? 'Complete' : state.status}`;
     $('neural-progress').value = state.simulated_ms || 0;
-    $('neural-time').textContent = `${(state.simulated_ms || 0).toFixed(0)} / ${descriptor.total_ms} ms neural time`;
-    $('neural-wall').textContent = idle ? 'Runs on demand' : `${(state.wall_seconds || 0).toFixed(2)} s elapsed · ${(state.cpu_seconds || 0).toFixed(3)} CPU s`;
+    $('neural-time').textContent = `${(state.simulated_ms || 0).toFixed(0)} / ${descriptor.total_ms} ms`;
+    $('neural-wall').textContent = idle ? 'On demand' : `${(state.wall_seconds || 0).toFixed(2)} s elapsed`;
+    $('neural-wall').dataset.tooltip = `Elapsed wall time: ${(state.wall_seconds || 0).toFixed(2)} s. Thread CPU time: ${(state.cpu_seconds || 0).toFixed(3)} s.`;
     $('neural-spikes').textContent = idle ? '—' : format(state.total_spikes);
     $('neural-downstream').textContent = idle ? '—' : format(state.downstream_spikes);
     $('neural-active').textContent = idle ? '—' : format(state.neurons_that_spiked);
@@ -176,11 +184,13 @@ export function createNeuralPanel(descriptor, motorDescriptor, command) {
       element.group.classList.toggle('has-spikes', count > 0);
       element.circle.setAttribute('r', String(5 + Math.min(4, Math.log2(1 + count))));
       element.title.textContent = `FlyWire ID ${element.item.id} · ${count} trial spikes${value ? ` · ${value.voltage_mv.toFixed(2)} mV` : ''}`;
+      element.group.dataset.tooltip = `${element.item.label}\n${element.title.textContent}`;
     }
     for (const [index, cells] of readoutElements) {
       const value = (state.readouts || []).find((item) => item.index === index);
       cells.spikes.textContent = value ? format(value.spikes) : '—';
       cells.voltage.textContent = value ? `${value.voltage_mv.toFixed(2)} mV` : '—';
+      cells.row.dataset.tooltip = `${cells.item.label} · ${cells.item.role}\nFlyWire ID ${cells.item.id}\n${cells.spikes.textContent} spikes · ${cells.voltage.textContent}`;
     }
     drawHistory(state.history || []);
     const descending = (state.readouts || []).filter((item) => item.role === 'descending')
@@ -190,14 +200,12 @@ export function createNeuralPanel(descriptor, motorDescriptor, command) {
   }
 
   return {
-    update(next, motorState, paused, sleeping) {
-      motor.update(motorState, paused, sleeping);
-      motor.setOtherBusy(next?.status === 'running' || pending);
+    update(next, motorState) {
+      motor.update(motorState);
       if (!next || next.revision === state?.revision) return;
       state = next;
-      controls();
       render();
     },
-    setConnected(value) { connected = value; motor.setConnected(value); controls(); },
+    select,
   };
 }

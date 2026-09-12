@@ -1,33 +1,29 @@
-.neural-launch{margin-top:15px}
-.neural-panel{position:absolute;right:24px;top:125px;bottom:103px;width:min(470px,calc(100vw - 40px));z-index:4;overflow:auto;overscroll-behavior:contain;background:#101c23f5;border:1px solid #c3d9dc40;border-radius:7px;padding:22px;color:#dae5e2;scrollbar-width:thin;box-shadow:0 12px 50px #0004}
+.neural-panel{position:absolute;right:24px;top:125px;max-height:calc(100vh - 402px);width:min(365px,calc(100vw - 40px));z-index:4;overflow:auto;overscroll-behavior:contain;background:#0c18268c;border:1px solid #c3d9dc40;border-radius:8px;padding:17px;color:#e4efe8;scrollbar-width:thin;text-shadow:0 1px 3px #08131ccc}
 .neural-open .map-panel{visibility:hidden}
 .neural-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.neural-heading h2{font-size:25px;margin:8px 0 4px;font-weight:400}
+.neural-heading h2{font-size:20px;margin:6px 0 4px;font-weight:400}
 .neural-heading .icon-button{flex-shrink:0;font-size:20px}
-.neural-panel p{font-size:11px;line-height:1.65;color:#adbdc2;margin:8px 0}
+.neural-panel p{font-size:10px;line-height:1.6;color:#d1ded9;margin:9px 0}
 .neural-panel h3{font-size:10px;letter-spacing:1.6px;font-weight:500;text-transform:uppercase;margin:21px 0 11px}
-.neural-panel .neural-source{font:11px monospace;color:#bfd7ce}
-.neural-panel .neural-boundary{border-left:2px solid #dcba80;padding:9px 12px;background:#dcba800b;color:#deceb3}
+.neural-panel .neural-source{display:flex;gap:16px;flex-wrap:wrap;font:10px monospace;color:#c7ddd0;margin:12px 0}
+.neural-tabs{display:flex;gap:5px;margin:15px 0 10px}
+.neural-tabs button{flex:1;border:1px solid var(--line);background:#09161e3d;color:#bdccc8;padding:9px 8px;border-radius:4px;font-size:10px}
+.neural-tabs button[aria-selected=true]{color:#deeee2;border-color:#b8d6c375;background:#b8d6c315}
 .neural-workflow{display:flex;gap:5px;align-items:stretch;margin:14px 0 10px;padding:0;list-style:none}
-.neural-workflow li{flex:1;min-width:0;border:1px solid var(--line);padding:10px 5px;text-align:center;font-size:10px;border-radius:3px;position:relative}
-.neural-workflow li+li::before{content:"→";position:absolute;left:-7px;top:11px;background:#101c23;color:#a6bdb6;font-size:10px}
+.neural-workflow li{flex:1;min-width:0;border:1px solid #c3d9dc47;padding:9px 3px;text-align:center;font-size:9px;border-radius:3px;position:relative;background:#09161c30}
+.neural-workflow li+li::before{content:"→";position:absolute;left:-7px;top:10px;color:#c5dcd1;font-size:10px}
 .neural-workflow small{display:block;font-size:8px;color:#9baeb7;margin-top:5px;line-height:1.5}
 .neural-workflow .measured{border-color:#b5d4bf99;background:#b5d4bf13}
 .neural-workflow .disconnected{border-style:dashed;color:#dfc392}
-.neural-actions{display:flex;flex-wrap:wrap;gap:6px;margin:13px 0}
-.neural-actions button{border:1px solid var(--line);border-radius:4px;font-size:10px;background:#192930;padding:10px}
-.neural-actions button:first-child{flex-basis:100%;background:#bfd5c4;color:#182b25;font-weight:600}
-.neural-actions button[aria-pressed=true]{border-color:#bfd5c4}
-.neural-actions button:disabled{cursor:default}
 .neural-panel #neural-status{color:#d4e4dc;font-size:11px}
 .neural-panel progress{appearance:none;display:block;width:100%;height:3px;border:0;margin:12px 0 9px;background:#26363b;accent-color:#b5d4bf}
 .neural-panel progress::-webkit-progress-bar{background:#26363b}
 .neural-panel progress::-webkit-progress-value{background:#b5d4bf}
 .neural-panel progress::-moz-progress-bar{background:#b5d4bf}
 .neural-timing{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font:9px monospace;color:#9fb4bb}
-.neural-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:19px 0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.neural-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:15px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .neural-metrics span{font-size:9px;color:#adbdc2}
-.neural-metrics strong{display:block;font:22px monospace;color:#dce8de;margin-bottom:5px}
+.neural-metrics strong{display:block;font:20px monospace;color:#e0f0e4;margin-bottom:5px}
 #neural-graph{display:block;width:100%;height:auto;overflow:visible}
 #neural-graph>path{fill:none;stroke-width:.8;opacity:.45}
 #neural-graph .graph-excitatory{stroke:#98bbaa}
@@ -41,13 +37,13 @@
 .neural-legend span:last-child{color:#d39e84}
 #neural-timeline{width:100%;height:auto;display:block}
 #motor-timeline{width:100%;height:auto;display:block}
-.antennal-details{border-top:1px solid var(--line);margin-top:22px;padding-top:16px}
-.antennal-details summary{font-size:11px;color:#bfd7ce;cursor:pointer;line-height:1.6}
+.neural-caption{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;font:9px monospace;color:#c2d4ca}
+.neural-badge{border:1px solid #d5bd8359;color:#e0cca4;border-radius:3px;padding:5px 7px;background:#d5bd830a}
 .neural-readout-table{width:100%;border-collapse:collapse;font:11px monospace;margin:10px 0}
 .neural-readout-table th,.neural-readout-table td{padding:8px 0;border-bottom:1px solid #c3d9dc18;text-align:right;font-weight:400}
 .neural-readout-table th:first-child{text-align:left}
 .neural-readout-table thead{font:9px sans-serif;color:#a5b7be}
-.neural-panel .neural-footnote{font-size:10px;margin-top:17px}
+.neural-panel .neural-footnote{font-size:9px;margin-top:16px}
 .neural-panel a{color:#bfd7ce;text-underline-offset:3px}
-@media(max-height:650px) and (min-width:701px){.neural-panel{top:90px;bottom:99px}}
-@media(max-width:700px){.neural-panel{top:90px;bottom:95px;right:12px;width:calc(100vw - 24px);padding:18px}.neural-open .intro,.neural-open #fly-panel{visibility:hidden}.neural-heading h2{font-size:23px}}
+@media(max-height:650px) and (min-width:701px){.neural-panel{top:90px;max-height:calc(100vh - 348px)}}
+@media(max-width:700px){.neural-panel{top:90px;max-height:calc(100vh - 355px);right:12px;width:calc(100vw - 24px);padding:14px}.neural-open .intro,.neural-open #fly-panel{visibility:hidden}.neural-heading h2{font-size:19px}}

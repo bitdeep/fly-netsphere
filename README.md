@@ -5,8 +5,11 @@
 Explore the **NETSPHERE** in a local browser, inspect one anatomical flybody animal,
 and stimulate a **127,400-neuron FlyWire reference model** while watching measured
 neural activity. An experimental **MN9-to-proboscis link** now drives one body
-actuator from simulated motor-neuron spikes, with explicit baseline and blocked-link
-controls. [Open the development environment](#interactive-environment-in-the-browser)
+actuator from simulated motor-neuron spikes. A separate action bar offers sugar,
+water, bitter and antennal stimuli, with baseline and blocked-link comparisons.
+A transparent inspector keeps measured signals visible and puts explanations in
+hover, focus and touch tooltips.
+[Open the development environment](#interactive-environment-in-the-browser)
 or read the [motor link and its limits](docs/motor-link.md).
 
 The animal is the anatomically detailed [flybody](https://github.com/TuragaLab/flybody) model of *Drosophila melanogaster* (Google DeepMind and HHMI Janelia, *Nature* 2025). In the separate recorded-flight pipeline, its pretrained controller runs on CUDA, MuJoCo Warp integrates the body and wing aerodynamics at 20 kHz, and a geometric navigator steers the fly through the collidable interior. Every frame of those recordings comes from the integrated physical state.
@@ -25,7 +28,7 @@ The full 60-second take, its metrics and the validation files are attached to th
 - It **is** whole-body physics: joints, wings with ellipsoid fluid forces, and the official DMPO flight policy (wingbeat pattern generator plus a residual MLP) driving the actuators.
 - It **is** a real 3D world: walls, pillars, ducts, cables and walkways with collision in the same MuJoCo model that integrates the fly. The camera moves through that space.
 - The **recorded flight** uses the official MLP policy. The browser development lab
-  runs the published FlyWire 630 connectome and an experimental sugar-response
+  runs the published FlyWire 630 connectome and an experimental taste-response
   motor link. Its firing-rate-to-servo adapter is engineered; world sensing,
   neural walking and neural flight remain unimplemented.
 - The navigator is **not** learned vision. It reads the known world geometry and the measured position at 100 Hz and picks turns and climbs with clearance for wings and body. It only changes the reference command; it never writes the animal's pose or velocity.
@@ -83,13 +86,18 @@ verify_take.py       independent checks: duration, decoded frames, clearance, ha
 The local browser observatory contains **one physical flybody animal**, selectable
 with a close-up orbit camera, plus three city viewpoints and a gravity/contact
 experiment. It settles passively between on-demand trials, with no autonomous
-walking or flight policy. Open **Neural activity → Stimulate sugar neurons** to
-run the entire FlyWire 630 graph (127,400 neurons, 14,687,178 stored connections)
-and drive the rostrum from its two MN9 motor neurons. **View proboscis** focuses
-the observer on the head. Neural and physical time advance together in this
-500 ms experiment. Compare no input or a blocked motor link; the UI retains
-measured spikes, drive and joint motion after completion.
-The expandable antennal reference assay retains its separate clock and readouts.
+walking or flight policy. The always-visible action bar offers **Feed** (sugar),
+**Water**, **Bitter** and **Antenna**. Taste trials run the entire FlyWire 630 graph
+(127,400 neurons, 14,687,178 stored connections); its MN9 spikes can drive the
+rostrum. Feed models feeding initiation, not eating or digestion. Water activates
+water-sensing neurons; bitter alone produces neural activity without movement in
+this protocol. **Wings** and **Walk** are labeled **Not connected**.
+Use **Focus** to inspect the head and **Neural activity** to open the transparent
+inspector. Hover, focus or tap its components and numbers for explanations;
+point along a graph to inspect measured samples. Actions work with the panel closed.
+**Baseline**, **Block link** (or **Block sensory** for Antenna) and **Stop** apply
+to the selected protocol. Taste trials share 500 ms of neural and physical time;
+the antennal assay retains its separate clock and has no muscle coupling.
 Three.js renders measured body poses on demand; native MuJoCo sleep reduces idle
 work. The backend is capped at 2 CPUs and 1 GiB. The browser requests
 high-performance GPU graphics and targets 30 FPS while moving, with bounded
@@ -182,7 +190,7 @@ scripts/
   dev_environment.py   container-owned backend watcher; one dev stack on port 8089
   neural_reference.py  incremental LIF dynamics over the full FlyWire 630 graph
   neural_lab.py        bounded on-demand trials and measured activity telemetry
-  motor_bridge.py      shared-clock sugar → FlyWire → MN9 → native rostrum servo
+  motor_bridge.py      shared-clock taste → FlyWire → MN9 → native rostrum servo
   validate_motor_bridge.py causal motor controls, actuator isolation and clock checks
   fetch_neural_reference.py, prepare_neural_reference.py, validate_neural_reference.py
   passive_fly.py       cached anatomy attachment and passive initialization
