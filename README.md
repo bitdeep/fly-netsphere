@@ -1,0 +1,138 @@
+# fly-netsphere
+
+**A physics-simulated fruit fly flying through a BLAME!-inspired megastructure.**
+
+The animal is the anatomically detailed [flybody](https://github.com/TuragaLab/flybody) model of *Drosophila melanogaster* (Google DeepMind and HHMI Janelia, *Nature* 2025). Its pretrained flight controller runs on CUDA, MuJoCo Warp integrates the body and the wing aerodynamics at 20 kHz, and a geometric navigator steers the fly through a procedurally built, fully collidable interior: the NETSPHERE. Every frame of the recording comes from the integrated physical state. Nothing is composited, keyframed or teleported.
+
+![A fruit fly in flight beside a pillar of the NETSPHERE](docs/media/hero.png)
+
+![Six seconds of the validated take](docs/media/flight.gif)
+
+The full 60-second take, its metrics and the validation files are attached to the [v0.1.0 release](https://github.com/bitdeep/fly-netsphere/releases/tag/v0.1.0).
+
+## What this is, and what it is not
+
+- It **is** whole-body physics: joints, wings with ellipsoid fluid forces, and the official DMPO flight policy (wingbeat pattern generator plus a residual MLP) driving the actuators.
+- It **is** a real 3D world: walls, pillars, ducts, cables and walkways with collision in the same MuJoCo model that integrates the fly. The camera moves through that space.
+- It is **not** a brain simulation. No connectome (MaleCNS, FlyWire) is involved.
+- The navigator is **not** learned vision. It reads the known world geometry and the measured position at 100 Hz and picks turns and climbs with clearance for wings and body. It only changes the reference command; it never writes the animal's pose or velocity.
+
+## Results
+
+Validated take `netsphere_60s`, attached to the release:
+
+| Measure | Value |
+|---|---:|
+| Physical time, equal to the decoded video duration | 60.000 s |
+| Physics steps / controller steps | 1,200,000 / 300,000 |
+| Episode resets / world contacts / solver overflow flags | 0 / 0 / 0 |
+| Distance flown | 12.02 m |
+| Altitude range | 3.92 – 7.25 cm |
+| Max tracking error against the reference | 0.66 mm |
+| Min conservative clearance around the whole body | 8.44 mm |
+| Median anatomical pitch (abdomen to head) | 35.3° |
+| Navigator goals reached / avoidance updates | 16 / 5,275 |
+| Video | 1280×720, 30 fps, 1,800 frames, 8 physical sub-poses per frame (1/120 s exposure) |
+| CUDA policy vs NumPy reference, max abs error | 5.7e-7 |
+| Physics compute on an RTX 4090, after warm-up | 886 s |
+
+Perturbation tests with the same seed and initial pose: moving the first pillar by −3 cm changed the trajectory by up to 3.9 cm within 1.2 s, with no contact; disabling avoidance made the fly hit the pillar at 0.76 s and the run was rejected. The first validated minute (`city_final_60s`, 47.5° median pitch, camera from behind) is kept for comparison. Detailed reports, in Portuguese: [docs/netsphere-validation.md](docs/netsphere-validation.md) and [docs/validation-60s.md](docs/validation-60s.md).
+
+## How it works
+
+```
+city_world.py        MJCF world: procedural brutalist district, 412 geoms including the fly, lengths in cm
+        │
+city_navigation.py   every 10 ms: candidate manoeuvres vs. distance to the world → reference command
+        ▼
+flight_cuda.py       LayerNormMLP 104→256→256→256→12 + wingbeat generator + joint feedback, 5 kHz, CUDA
+        ▼
+MuJoCo Warp          physics at 20 kHz, ellipsoid wing fluid, collisions; no pose writes after reset
+        ▼
+run_city.py          states.npz · model.mjb · metrics.json (hashes of code, checkpoint, states, model)
+        ▼
+render_city.py       EGL render of the recorded states, 8 sub-poses per frame → fly_city.mp4
+        ▼
+verify_take.py       independent checks: duration, decoded frames, clearance, hashes → validation.json
+```
+
+- **Policy.** `scripts/flight_mlp.py` is a NumPy port of the official Acme checkpoint: Linear → LayerNorm → tanh, then ELU layers and a mean head. `scripts/flight_cuda.py` runs the same controller with NVIDIA Warp, and the two are compared numerically on every run.
+- **Observations and actions.** A 104-D observation (the `walker/*` keys in lexicographic order) maps to a 12-D canonical action in [-1, 1], then to actuator ranges. Controller step 2e-4 s, physics step 5e-5 s.
+- **World.** `scripts/city_world.py` builds a central core, pillars, ducts, cables, walkways, access plates, grilles and wear. Textures are procedural and drawn in surface coordinates. The NETSPHERE plates are physical geometry.
+- **Navigation.** `scripts/city_navigation.py` is a receding-horizon navigator over known geometry. It explores four regions of the district and keeps wing and body clearance.
+- **Camera.** A near-lateral third-person view (azimuth 85°, elevation 2°) shortens its distance with a ray test when scenery is in the way. A first-person view is available. Visibility is checked on every frame with an unfiltered object-ID render.
+- **Timing.** The video clock is the physics clock. A run that falls or touches the world is rejected and its diagnostics are kept. No episode is stretched or restarted.
+
+## Quick start
+
+Requirements: Docker with the NVIDIA container runtime and an NVIDIA GPU (developed and validated on an RTX 4090). Nothing else is installed on the host; the fetch scripts use `curl`, `tar`, `unzip`, `patch` and `sha256sum`.
+
+```bash
+make setup    # flybody at a pinned commit (+ one small patch) and the Figshare policies/dataset, hash-verified
+make build    # Docker image; 66 wheels pinned by version and SHA-256, no source distributions
+make take     # simulate 60 s, render 1,800 frames, verify → out/take_<timestamp>/ (third-person camera)
+```
+
+Or directly:
+
+```bash
+scripts/fetch_flybody.sh && scripts/fetch_data.sh
+docker compose build fly
+docker compose run --rm fly bash scripts/simulate_city.sh 60 out/my_take third-person
+docker compose run --rm fly python scripts/render_city.py out/my_take --distance 3 --output out/my_take/wide.mp4
+docker compose run --rm fly python scripts/verify_take.py out/my_take --seconds 60
+```
+
+`simulate_city.sh SECONDS DIR [VIEW]` runs simulation, render and verification; `VIEW` defaults to `first-person`, and the validated take uses `third-person`. `docker compose run --rm fly` with no arguments runs the script with its defaults.
+
+A minute of flight is 300,000 controller steps and 1.2 million physics steps. Expect roughly 15 minutes of compute per simulated minute on an RTX 4090, plus rendering. The first run compiles the CUDA kernels, which are cached in the `warp-cache` volume.
+
+Each take directory contains `fly_city.mp4`, `states.npz` (poses, velocities, physics clock, navigator commands and the sub-poses of every frame), `model.mjb` (the compiled model with its geometry and textures), `metrics.json` and `validation.json`. States can be re-rendered with another camera without recomputing physics.
+
+Options of `scripts/run_city.py`: `--seconds`, `--seed`, `--backend cuda|cpu`, `--obstacle-shift`, `--disable-avoidance` (negative control), `--body-pitch` (cruise reference, default 30°) and `--shutter-samples`.
+
+## Repository layout
+
+```
+scripts/
+  run_city.py           continuous recorded simulation, no automatic resets
+  render_city.py        EGL render of recorded states, third- or first-person
+  verify_take.py        independent acceptance checks on states, geometry and video
+  verify_avoidance.py   compare baseline, shifted-obstacle and avoidance-off runs
+  city_world.py         procedural collidable megastructure
+  city_navigation.py    receding-horizon geometric navigator
+  flight_cuda.py        controller and physics on CUDA (MuJoCo Warp)
+  flight_mlp.py         NumPy reference of the flight policy
+  flight_runtime.py     continuous force-driven flight task and reference commands
+  simulate_city.sh      run → render → verify
+  probe_*.py            short CPU/GPU flight and backend-consistency probes
+  inspect_policy.py     read the official TensorFlow checkpoint on CPU
+  lock_dependencies.py  regenerate requirements.lock from an inspected image
+  fetch_flybody.sh      pinned upstream source plus patch
+  fetch_data.sh         Figshare policies and dataset
+  render_fly.py, fly_in_the_city.py, assemble_blame.py   earlier experiments, kept for reference
+patches/                flybody plotting imports become lazy (no matplotlib/IPython in the image)
+docs/                   validation reports, roadmap, dependency provenance, media
+Dockerfile, docker-compose.yml, requirements.txt, requirements.lock
+```
+
+`flybody/` and `data/` are created by the fetch scripts and are not part of the repository.
+
+## Reproducibility and provenance
+
+- `requirements.lock` pins all 66 wheels by version and SHA-256, and the image is built with `--require-hashes --only-binary=:all:`. Origins are listed in [docs/dependency-provenance.json](docs/dependency-provenance.json). Tested versions: MuJoCo and MuJoCo Warp 3.13.0, NVIDIA Warp 1.17.0, dm_control 1.0.46, Python 3.10.
+- flybody is fetched at commit `d015e9b` with a verified tarball hash. The only local change is [one patch](patches/flybody-lazy-plot-imports.patch) that defers the matplotlib and IPython imports so the package loads without them.
+- Policies and the flight dataset come from the flybody Figshare deposit ([10.25378/janelia.25309105](https://doi.org/10.25378/janelia.25309105)) and are hash-checked after download.
+- Every `metrics.json` records the SHA-256 of the scripts, the checkpoint, the recorded states and the compiled model, so a take can be traced to the exact code that produced it.
+
+## Roadmap
+
+Ideas after the validated minute, in order of preference: a vertical shaft crossing with cables and ducts at different heights; a controlled comparison of two runs where one passage is blocked; and an observatory mode that pauses the physical replay and shows speed, pitch, clearance and the navigator's decision at the same instant. Notes in [docs/netsphere-ideas.md](docs/netsphere-ideas.md), in Portuguese. The walking and vision policies of the same deposit are still TensorFlow SavedModels and have not been ported.
+
+## Credits and licenses
+
+- flybody: Vaxenburg et al., *Whole-body physics simulation of fruit fly locomotion*, Nature 643, 1312–1320 (2025). [Paper](https://www.nature.com/articles/s41586-025-09029-4) · [Code](https://github.com/TuragaLab/flybody) (Apache-2.0) · [Data](https://doi.org/10.25378/janelia.25309105).
+- [MuJoCo](https://github.com/google-deepmind/mujoco), [MuJoCo Warp](https://github.com/google-deepmind/mujoco_warp), [NVIDIA Warp](https://github.com/NVIDIA/warp) and [dm_control](https://github.com/google-deepmind/dm_control).
+- The NETSPHERE is a fan homage to Tsutomu Nihei's *BLAME!*. Nothing here is official or affiliated.
+
+Licensed under the Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
