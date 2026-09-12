@@ -16,6 +16,39 @@ from city_navigation import Navigator
 from flight_runtime import make_environment
 
 
+def comfort_headings(physics, states, head_id, ns, sigma_seconds=.25):
+    """Offline gaze from measured displacement; never feeds the physical model.
+
+    Instantaneous flapping velocity aliases badly at video rate. Average each
+    exposure's actual head positions, smooth that path symmetrically, and use
+    its tangent for yaw. Only orientation is filtered; the eye stays at the
+    integrated head position in every exposure sample.
+    """
+    poses = states["shutter_qpos"] if "shutter_qpos" in states else states["qpos"]
+    samples = []
+    for pose in poses:
+        physics.data.qpos[:] = pose
+        mujoco.mj_kinematics(physics.model.ptr, physics.data.ptr)
+        samples.append(physics.data.xpos[head_id].copy())
+    positions = np.asarray(samples).reshape(-1, ns, 3).mean(axis=1)
+    if len(positions) < 3:
+        raise ValueError("Comfort camera needs at least three recorded frames")
+    dt = 1/30
+    radius = int(np.ceil(4*sigma_seconds/dt))
+    offsets = np.arange(-radius, radius+1)
+    kernel = np.exp(-.5*(offsets*dt/sigma_seconds)**2)
+    kernel /= kernel.sum()
+    # Linear extension preserves constant flight speed at the two endpoints.
+    padded = np.concatenate([
+        positions[0]+np.arange(-radius, 0)[:, None]*(positions[1]-positions[0]),
+        positions,
+        positions[-1]+np.arange(1, radius+1)[:, None]*(positions[-1]-positions[-2])])
+    smooth = np.stack([np.convolve(padded[:, j], kernel, "valid")
+                       for j in range(3)], axis=-1)
+    velocity = np.gradient(smooth, dt, axis=0)
+    return np.unwrap(np.arctan2(velocity[:, 1], velocity[:, 0]))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("take", type=Path)
@@ -28,6 +61,8 @@ def main():
     parser.add_argument("--view", choices=["third-person", "first-person"], default="third-person")
     parser.add_argument("--fov", type=float, default=65,
                         help="Vertical field of view for the head-mounted first-person camera")
+    parser.add_argument("--stabilization", choices=["comfort", "legacy"], default="comfort",
+                        help="First-person gaze: level horizon and averaged displacement, or original velocity following")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     metrics = json.loads((args.take/"metrics.json").read_text())
@@ -47,6 +82,9 @@ def main():
     head_id = physics.model.name2id("walker/head", "body")
     if first_person:
         physics.model.vis.global_.fovy = args.fov
+    ns = metrics.get("shutter_samples", 1)
+    comfort = first_person and args.stabilization == "comfort"
+    headings = comfort_headings(physics, states, head_id, ns) if comfort else None
     cam = MovableCamera(physics, height=args.height, width=args.width)
     cam.scene.flags[mujoco.mjtRndFlag.mjRND_FOG] = True
     cam.option.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = False
@@ -77,12 +115,17 @@ def main():
     hit_geom = np.array([-1], dtype=np.int32)
     visible_pixels = []
     world_pixels, camera_positions, head_positions, luminance = [], [], [], []
+    camera_forwards, camera_ups = [], []
     try:
         for i, (t, qpos, qvel) in enumerate(zip(states["time"], states["qpos"], states["qvel"])):
-            target_yaw = np.arctan2(qvel[1], qvel[0])
-            yaw += (.5 if first_person else .13)*np.arctan2(np.sin(target_yaw-yaw), np.cos(target_yaw-yaw))
-            target_pitch = np.arctan2(qvel[2], np.linalg.norm(qvel[:2]))
-            gaze_pitch += .25*(target_pitch-gaze_pitch)
+            if comfort:
+                yaw = headings[i]
+                gaze_pitch = 0.
+            else:
+                target_yaw = np.arctan2(qvel[1], qvel[0])
+                yaw += (.5 if first_person else .13)*np.arctan2(np.sin(target_yaw-yaw), np.cos(target_yaw-yaw))
+                target_pitch = np.arctan2(qvel[2], np.linalg.norm(qvel[:2]))
+                gaze_pitch += .25*(target_pitch-gaze_pitch)
             azimuth = np.rad2deg(yaw)+args.azimuth_offset
             az, el = np.deg2rad([azimuth, args.elevation])
             toward_camera = -np.array([np.cos(az)*np.cos(el), np.sin(az)*np.cos(el), np.sin(el)])
@@ -94,7 +137,6 @@ def main():
             if not first_person and safe_distance < .5:
                 raise RuntimeError(f"Camera corridor too narrow at frame {i}: {safe_distance}")
             camera_distance = min(camera_distance+.12*(safe_distance-camera_distance), safe_distance)
-            ns = metrics.get("shutter_samples", 1)
             subframes = states["shutter_qpos"][i*ns:(i+1)*ns] if "shutter_qpos" in states else [qpos]
             if not len(subframes):
                 break
@@ -105,8 +147,8 @@ def main():
                 physics.data.time = t
                 mujoco.mj_forward(physics.model.ptr, physics.data.ptr)
                 if first_person:
-                    # Real head position; direction follows measured flight velocity.
-                    # This is a stabilized human POV, not a compound-eye model.
+                    # Real head position with a human viewing direction.
+                    # Gaze stabilization never changes the integrated anatomy.
                     forward = np.array([np.cos(yaw)*np.cos(gaze_pitch),
                                         np.sin(yaw)*np.cos(gaze_pitch), np.sin(gaze_pitch)])
                     eye = physics.data.xpos[head_id].copy()
@@ -120,6 +162,8 @@ def main():
             encoder.stdin.write(image.tobytes())
             if first_person:
                 camera_positions.append(np.mean([c.pos for c in cam.scene.camera], axis=0).tolist())
+                camera_forwards.append(np.mean([c.forward for c in cam.scene.camera], axis=0).tolist())
+                camera_ups.append(np.mean([c.up for c in cam.scene.camera], axis=0).tolist())
                 head_positions.append(eye.tolist())
                 luminance.append(float(image.mean()))
             visibility_physics.data.qpos[:] = subframes[-1]
@@ -167,9 +211,16 @@ def main():
                     "camera_collision_avoidance"):
             qa.pop(key)
         qa.update(camera_position_source="integrated walker/head body position",
-                  gaze_source="smoothed measured velocity, horizon stabilized",
+                  stabilization=args.stabilization,
+                  gaze_source=("tangent of Gaussian-smoothed measured head displacement; fixed level horizon"
+                               if comfort else "smoothed instantaneous velocity, horizon stabilized"),
+                  gaze_sigma_seconds=.25 if comfort else None,
+                  gaze_offline_symmetric=comfort,
                   anatomy_hidden_in_observer=True, vertical_fov_deg=args.fov,
                   camera_positions_cm=camera_positions, head_positions_cm=head_positions,
+                  camera_forwards=camera_forwards, camera_ups=camera_ups,
+                  source_states_sha256=metrics["states_sha256"],
+                  source_model_sha256=metrics["model_sha256"],
                   minimum_mean_luminance=min(luminance),
                   maximum_head_camera_error_cm=float(np.linalg.norm(
                       np.asarray(camera_positions)-head_positions, axis=1).max()))

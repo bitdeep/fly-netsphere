@@ -92,6 +92,22 @@ def main():
         check(len(render["visible_world_pixels"]) == len(state["qpos"]), "Incomplete POV visibility check")
         check(render["minimum_visible_world_pixels"] >= 1280*720*.25, "POV world not readable")
         check(render["minimum_mean_luminance"] >= 8, "POV too dark")
+        if render.get("stabilization") == "comfort":
+            forward = np.asarray(render["camera_forwards"])
+            up = np.asarray(render["camera_ups"])
+            check(forward.shape == up.shape == (len(state["qpos"]), 3), "Missing camera basis")
+            check(np.isfinite(forward).all() and np.isfinite(up).all(), "Nonfinite camera basis")
+            check(np.max(np.abs(np.linalg.norm(forward, axis=1)-1)) < 1e-5, "Invalid gaze direction")
+            check(np.max(np.abs(forward[:, 2])) < 1e-5, "Comfort gaze bobs vertically")
+            check(np.max(np.abs(up-[0, 0, 1])) < 1e-5, "Comfort horizon rolls")
+            check(render["source_states_sha256"] == meta["states_sha256"], "Changed physical take")
+            check(render["source_model_sha256"] == meta["model_sha256"], "Changed physical world")
+            yaw = np.unwrap(np.arctan2(forward[:, 1], forward[:, 0]))
+            yaw_acceleration = np.rad2deg(np.diff(yaw, n=2))*30**2
+            # The original take had >1,600 deg/s² RMS from sampled wingbeat
+            # velocity. Check actual rendered orientations, not filter settings.
+            yaw_acceleration_rms = float(np.sqrt(np.mean(yaw_acceleration**2)))
+            check(yaw_acceleration_rms < 150, "Comfort camera still has abrupt angular motion")
     else:
         check(len(render["visible_fly_pixels"]) == len(state["qpos"]), "Incomplete visibility check")
         check(render["minimum_visible_fly_pixels"] >= 600, "Fly not visible throughout video")
@@ -107,6 +123,11 @@ def main():
     if first_person:
         report.update(maximum_head_camera_error_cm=float(max(head_errors)),
                       minimum_visible_world_pixels=render["minimum_visible_world_pixels"])
+        if render.get("stabilization") == "comfort":
+            report.update(stabilization="comfort",
+                          yaw_acceleration_rms_deg_s2=yaw_acceleration_rms,
+                          maximum_vertical_gaze_component=float(np.max(np.abs(forward[:, 2]))),
+                          unchanged_physical_states=True)
     report_path = take/"validation.json" if args.video == "fly_city.mp4" else video_path.with_suffix(".validation.json")
     report_path.write_text(json.dumps(report, indent=2)+"\n")
     print(json.dumps(report, indent=2))
