@@ -66,17 +66,59 @@ learned leg and wing controllers. The [feeding guide](docs/habitat.md) explains
 the existing contact loop; the [delivery plan](docs/embodied-roadmap.md) covers
 continuous sensing and movement.
 
-## Next steps
+## Roadmap
 
-- Check sensory and steering neuron identities with **navis**, then establish
-  reliable responses to changing cues.
-- Evaluate **event-driven C/WASM simulation** to reduce the neural workload.
-- Explore **learning from food and water intake** once repeated sensory responses
-  work.
+The goal is one fly that finds and consumes food and water placed away from its
+mouth, then searches again when needed. The
+[delivery plan](docs/embodied-roadmap.md) owns the acceptance cases; this is a
+status snapshot, not a substitute for it.
 
-These are planned investigations. The [roadmap](docs/embodied-roadmap.md#next-investigations)
-sets their order, evidence requirements and limits; physical walking, flight
-and the complete feeding loop remain the delivery goal.
+**Working today**
+
+- Anatomical flybody in MuJoCo, rendered with Three.js / WebGL 2.
+- The full FlyWire 630 graph with numerical checks against the published
+  reference.
+- Taste contact → neural activity → mouth movement, with baseline and blocked
+  causal controls ([brain-to-body link](docs/motor-link.md)).
+- Finite apple and water portions, draining reserves, death and **New life**
+  ([feeding guide](docs/habitat.md)).
+- Separately, validated offline flight recordings with flybody's pretrained
+  controller and a geometric navigator — not driven by the browser's brain
+  ([flight recordings](docs/stabilized-pov.md)).
+
+**Current focus — gate 1: continuous sensory decisions**
+
+- The first odor measurements failed: activity persisted after input ended and
+  supplied no usable direction; an adaptive variant recovered rest but lost the
+  second cue ([results](docs/sensory-feasibility.md)).
+- Next task: pin bilateral sensory/readout neuron mappings and establish
+  repeated, directional responses without resetting neural state.
+
+**Then, in order**
+
+1. **Physical locomotion** — validate official walking inference, connect neural
+   commands, integrate flight and transitions. An exploratory walking probe
+   exists; numerical agreement and browser integration remain unverified.
+2. **Find and consume** — distant apple and water replenish the matching
+   reserves through physical approach, landing and mouth contact.
+3. **Complete release** — the full acceptance suite through the actual UI on
+   one identified commit, with documentation matching and CI green.
+
+**Investigations backing the gates**
+
+- Anatomy with **navis** to resolve sensory and steering candidates.
+- Event-driven **C/WASM neural core** to cut the measured neural runtime cost.
+- **Learning from intake** as an experimental extension once repeated sensory
+  responses work.
+
+Their order, evidence requirements and limits are set by the
+[delivery plan](docs/embodied-roadmap.md#next-investigations).
+
+**Deferred backlog** — touch/escape, learned vision, a reconstructed VNC,
+multiple flies, city expansion and texture polish wait until the foraging loop
+passes. [Earlier city ideas](docs/netsphere-ideas.md) are a historical backlog;
+a possible AI-assisted build method is noted in
+[ai-factory-codex-astra.md](docs/ai-factory-codex-astra.md).
 
 ## Watch it fly
 
