@@ -106,6 +106,10 @@ The navis and hae sources were inspected on 2026-09-13. Neither candidate is
 integrated into the project; their reported learning and performance results
 remain unverified locally. These investigations support the existing gates:
 
+The [connectome data inventory](connectome-data.md) records public download
+sources, verified offline annotations and candidate ID correspondences for this
+work. FAFB releases, BANC and MaleCNS remain separate; no runtime data was migrated.
+
 | Investigation | Place in the plan | Evidence needed before adoption |
 |---|---|---|
 | **Anatomy with navis** | First: resolve gate 1's sensory and steering candidates | A small, sourced table of FlyWire 630 IDs, sides, cell types and connections; morphology comparisons with explicit units and brain spaces |
