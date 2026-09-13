@@ -87,11 +87,18 @@ Update status only with implementation and measured evidence.
 | 3. Find and consume | Connect fields, locomotion, mouth contact and reserves in the browser | Distant apple and water each replenish the correct reserve; exhausted sources disappear; another source is found |
 | 4. Complete release | Run actual UI, causal controls and sustained workload checks | Every acceptance case below passes on the identified commit, documentation matches and CI is green |
 
-**Next implementation task: gate 1.** Start with a bounded sensory/readout
-feasibility measurement. Record candidate IDs, input range and activity/runtime
-ceilings before running it. A failure needs a specific diagnosis and resolution
-before proceeding. The isolated walking probe starts gate 2; the recorded
-flight controller supplies a cruise reference, not a validated transition system.
+**Gate 1 failed the first sensory feasibility measurements (2026-09-13).**
+The original full-graph odor response persisted after input ended. An explicitly
+separate adaptive-threshold experiment recovered rest in six repeats but lost
+the response to the second cue and supplied no usable direction.
+See the [protocol, numerical comparisons and results](sensory-feasibility.md).
+The reference core and live assays remain unchanged.
+
+**Next implementation task: resolve the sensory path and bilateral readout
+mapping, including responsiveness to a second cue.** Adaptation alone did not
+pass this gate; it is not ready for motor integration. The isolated walking
+probe starts gate 2; the recorded flight controller supplies a cruise reference,
+not a validated transition system.
 
 ## Acceptance through the browser
 
@@ -137,8 +144,9 @@ uses programmed food approach and interpolated flight; its
 uses handwritten navigation. It demonstrates a complete visible loop, but
 does not validate this project's neural-to-physical path.
 Its [WASM core notes](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/flybrain/README.md)
-report runaway activity for some v783 inputs. That is an upstream result,
-not a reproduced finding for our v630 runtime. Any reuse requires inspection
+report runaway activity for some v783 inputs. Our separate
+[v630 odor measurements](sensory-feasibility.md) now also show persistent activity;
+the protocols and releases are distinct. Any reuse requires inspection
 of pinned code, dependencies and licenses, isolated execution and numerical
 comparison with our reference.
 
