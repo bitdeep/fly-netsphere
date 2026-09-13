@@ -1,5 +1,9 @@
 # Referências e próximos experimentos na NETSPHERE
 
+> Historical ideas, not the active implementation queue. Food seeking, physical
+> flight, landing and consumption take priority under the
+> [delivery plan](embodied-roadmap.md). The proposals below remain deferred.
+
 Leitura em 12/09/2026, durante o cálculo do novo minuto de voo.
 Estas são propostas; não são capacidades já implementadas.
 
@@ -43,9 +47,6 @@ Nenhum dataset novo ou código desses sites foi instalado ou executado aqui.
    e inspecionar velocidade, inclinação, margem até obstáculos e comando
    escolhido pelo navegador. A gravação principal continua limpa; a visão
    técnica mostra os dados registrados no mesmo instante.
-
-Minha prioridade depois do minuto atual seria o poço: amplia a sensação de
-escala de BLAME! e exige um comportamento que se percebe diretamente no vídeo.
 
 ## Caminho para um experimento neural
 

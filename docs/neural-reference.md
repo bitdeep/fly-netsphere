@@ -15,6 +15,12 @@ The [object gallery](habitat.md) now supplies geometric mouth-contact input to
 that taste experiment. Broader sensory/muscle control, walking and flight remain
 future work; this is not a continuously embodied animal.
 
+This guide is the numerical reference for those bounded experiments. The
+[delivery plan](embodied-roadmap.md) requires sustained sensory, directional
+readout and resource checks before using the model for seeking. Agreement on
+short trials does not establish stable continuous activity or useful locomotor
+commands. A future solver port must pass comparisons with this reference.
+
 ## Protocol and visible signals
 
 Choose **Antenna** in the action bar. Open **Neural activity → Antenna** to

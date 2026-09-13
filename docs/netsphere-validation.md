@@ -1,5 +1,9 @@
 # fly living on NETSPHERE — ajuste de postura e materiais
 
+> Historical recording report. These measurements describe the offline learned
+> flight controller and geometric navigator. They do not validate browser
+> seeking or flight; current work follows the [delivery plan](embodied-roadmap.md).
+
 [Vídeo de um minuto](https://github.com/bitdeep/fly-netsphere/releases/download/v0.1.0/netsphere_60s-fly_city.mp4) ·
 [Validação automática](https://github.com/bitdeep/fly-netsphere/releases/download/v0.1.0/netsphere_60s-validation.json) ·
 [Métricas físicas](https://github.com/bitdeep/fly-netsphere/releases/download/v0.1.0/netsphere_60s-metrics.json) ·

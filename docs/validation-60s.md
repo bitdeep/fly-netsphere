@@ -1,5 +1,9 @@
 # Take físico de 60 segundos — 12/09/2026
 
+> Historical recording report. These measurements describe the offline learned
+> flight controller and geometric navigator. They do not validate browser
+> seeking or flight; current work follows the [delivery plan](embodied-roadmap.md).
+
 [Abrir vídeo](https://github.com/bitdeep/fly-netsphere/releases/download/v0.1.0/city_final_60s-fly_city.mp4) ·
 [Validação automática](https://github.com/bitdeep/fly-netsphere/releases/download/v0.1.0/city_final_60s-validation.json) ·
 [Métricas da física](https://github.com/bitdeep/fly-netsphere/releases/download/v0.1.0/city_final_60s-metrics.json) ·

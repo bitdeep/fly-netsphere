@@ -1,75 +1,45 @@
 # Browser environment
 
-The local observatory displays the existing NETSPHERE directly from its compiled
-MuJoCo geometry, with one physical flybody animal on the lower walkway.
-The initial **Fly 001** view follows its measured thorax: drag to orbit and scroll
-to zoom. Select another view to explore the city. Drag to look around, use **W A S D** to move, **Q / E** to move
-vertically, **Shift** to move faster and the mouse wheel to move forward/backward.
-The three city view buttons return to known observation points. Touch screens have
-movement buttons and support dragging to look.
+The browser shows one physical flybody animal in the NETSPHERE. It supports
+contact feeding, finite food/water portions and survival reserves. **It does not
+yet seek nearby food, walk or fly.** The [delivery plan](embodied-roadmap.md)
+defines that unfinished integration and its acceptance tests.
 
-The animal settles passively and has **one experimental neural motor link**.
-The separate action bar offers **Feed** (sugar), **Water**, **Bitter** and
-**Antenna**. Taste trials route calculated MN9 spikes through an engineered adapter
-to the native rostrum servo. Feed models feeding initiation, not eating or
-digestion; Water stimulates water-sensing neurons. Bitter alone produces neural
-activity without movement in this protocol. **Wings** and **Walk** are labeled
-**Not connected** and explain the missing motor circuitry.
-**Focus** points the observer at the head. Compare **Baseline** and **Block link**
-for the selected taste stimulus; **Stop** removes actuator authority.
-New motor trials wait for physical rest,
-and pause/resume affects both clocks. All other actuators remain disabled.
-Anatomical springs, joints, gravity and contact stay active. It does not walk or
-fly autonomously. [Motor protocol and causal validation](motor-link.md).
+## Use the observatory
 
-**Objects** opens a gallery of fruit, water, bitter and neutral taste volumes.
-Choose **Offer at mouth**, or **Place in world** followed by a surface click near
-the fly. Geometric mouth contact gates the selected sensory neurons, sampled
-every 5 ms during a response. **React to objects** disables this input; remove
-objects individually. Contact can evoke a 500 ms rest-start neural
-trial after the body settles. Finite apple/water portions can retry after at least
-two simulated seconds while their reserve is below 95%. There is no attraction to distant fruit or
-continuous autonomous brain state yet. These stationary, permeable taste cues
-do not apply forces or model solid food, digestion or odor.
-[Gallery controls, encoding and checks](habitat.md).
+Start with **Objects → Apple → Offer at mouth**. After the body settles, contact
+can trigger a neural response, mouth movement and intake. Try water next.
+Both reserves start at 70%; either reaching zero ends the simulated life.
+See [feeding and survival](habitat.md) for resource rules and measured results.
 
-**Energy** and **Water** remain visible above the stimulus buttons. Each starts
-at 70%; physical time drains 0.2 and 0.3 percentage points per second respectively.
-Contact plus measured MN9-driven rostrum motion transfers the matching reserve
-from a finite portion. Empty portions disappear. Pause freezes the reserves;
-either reaching zero ends the simulated life and cancels neural/motor trials.
-**New life** restores starting reserves without changing body pose or objects.
-This is explicit game-scale accounting, not biological metabolism or a brain
-hunger circuit. Frontend reload preserves life state; backend restart resets it.
+| Control | What it does today |
+|---|---|
+| Objects → Offer at mouth | Places a finite portion at the measured mouth; never moves the fly |
+| Objects → Place in world | Click a surface within 3 cm; a source outside mouth contact causes no response |
+| React to objects / × | Enable or disable world taste input / remove a source |
+| Feed / Water / Bitter | Direct taste experiments; these buttons do not replenish reserves |
+| Antenna | Separate neural-only assay, with no body actuation |
+| Baseline / Block link or Block sensory | Compare the selected experiment with its causal control |
+| Pause / Stop | Freeze simulation time / cancel the current trial; stopping a world trial also disables reactive senses |
+| New life | Available after death; restores reserves while preserving pose, objects and Pause |
+| Wings / Walk | Not connected |
+| Neural activity | Inspect measured signals; commands stay available with the panel closed |
 
-**Antenna** retains a separate connectome assay:
-antennal stimulus → FlyWire LIF dynamics → neural readouts → disconnected muscles.
-Its structure view shows a selection of actual connections with schematic positions;
-the entire published graph is retained in the simulation. Counts and voltages come
-from calculated activity, and the timeline groups measured spikes in 5 ms bins.
-Its **Block sensory** comparison blocks outgoing sensory connections; **Stop**
-cancels the assay without stopping the environment. The trial clock is separate
-from the physical clock. Antennal touch, mouse movement and camera direction
-do not stimulate this assay. Taste-object contact uses the separate motor link.
-[Protocol, preparation and validation](neural-reference.md).
+Taste experiments drive only the rostrum through the
+[MN9 adapter](motor-link.md). The [antennal assay](neural-reference.md) has its
+own clock and no motor authority. Touching an antenna, moving the mouse or
+changing the camera does not stimulate it.
 
-**Neural activity** opens a transparent inspector with **Taste → body** and
-**Antenna** tabs. Actions remain outside it, available with the panel closed.
-Hover or focus components, numbers and traces for explanations and measured
-values; click/tap also opens inspector tooltips. Graph position selects the
-nearest 5 ms sample. Escape dismisses the tooltip. Short **Experimental link**
-and **Neural only** labels keep the coupling boundary visible.
-Transparency uses a flat alpha background without an additional blur pass.
-The action bar itself retains a measured result: downstream spikes, proboscis
-movement, baseline or blocked-link outcome, or an explicitly incomplete stopped
-trial. Short button captions distinguish **Proboscis** responses from
-**Neural only** assays. Tooltips never receive pointer events; action hints appear
-above the whole bar so they cannot cover another control's hit target.
+Select **Fly 001**, its card or marker to follow the measured thorax; drag to
+orbit and scroll to zoom. **Focus** frames the head. In city views, drag to look,
+use **W A S D** to move, **Q / E** vertically and **Shift** for speed; the wheel
+moves forward/backward. Touch screens have movement buttons. These controls
+move the observer, never the animal.
 
-Select the animal with **Fly 001**, the specimen card, or its marker when visible.
-Selection and camera movement never command its muscles.
-The separate recorded-flight pipeline remains available.
-The amber sphere is an explicitly initialized gravity experiment, not an animal.
+Hover, focus or tap inspector values for explanations. Point along a trace for
+its nearest measured 5 ms sample; Escape dismisses hints. Results remain visible
+in the action bar. The amber sphere is a separate gravity experiment, and the
+[flight recordings](stabilized-pov.md) are an offline pipeline.
 
 ## Start
 
@@ -94,6 +64,10 @@ No CDN, analytics, external fonts or browser extensions are required. Preparatio
 is done once; rebuild the cache after changing the source anatomy or generator.
 Startup verifies the source XML, generator, physics and visual packet hashes.
 The manifest also records source mesh hashes for provenance.
+
+Next, [prepare and validate the neural cache](neural-reference.md#resources-and-preparation)
+to enable the taste and antennal experiments. The body setup alone does not
+enable them; missing or stale neural validation disables their controls.
 
 ```bash
 docker compose logs --tail 30 environment-dev
@@ -237,9 +211,9 @@ without requesting 3D redraws; its small revisioned packet contains no anatomy.
 
 The renderer already supports richer textures: Three.js
 [MeshStandardMaterial](https://threejs.org/docs/pages/MeshStandardMaterial.html)
-provides color, normal, roughness, metalness and environment maps. The next visual
-pass should improve authored materials, UVs and lighting within the existing
-frame/memory budget. The official
+provides color, normal, roughness, metalness and environment maps. After the
+seeking loop passes, visual work can improve authored materials, UVs and lighting
+within the existing frame/memory budget. The official
 [KTX2Loader](https://threejs.org/docs/pages/KTX2Loader.html) supports compressed
 GPU textures; it is a candidate for larger assets, not yet enabled here. Changing
 the renderer is not required for that material workflow. No external assets or
