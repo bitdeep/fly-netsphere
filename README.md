@@ -2,18 +2,51 @@
 
 **A connectome reference lab and a physical fruit fly in a BLAME!-inspired megastructure.**
 
-Explore the **NETSPHERE** in a local browser, inspect one anatomical flybody animal,
-and stimulate a **127,400-neuron FlyWire reference model** while watching measured
-neural activity. An experimental **MN9-to-proboscis link** now drives one body
-actuator from simulated motor-neuron spikes. A separate action bar offers sugar,
-water, bitter and antennal stimuli, with baseline and blocked-link comparisons.
-A transparent inspector keeps measured signals visible and puts explanations in
-hover, focus and touch tooltips.
-An **object gallery** adds fruit, water, bitter and neutral taste volumes.
-Measured mouth contact can trigger and gate a neural response; removing a source
-cuts its future input. This is a bounded contact reflex, not autonomous foraging.
-[Open the development environment](#interactive-environment-in-the-browser)
-or read the [object gallery](docs/habitat.md) and [motor link](docs/motor-link.md).
+Explore the **NETSPHERE** in a local browser with one anatomical flybody animal
+and the published **FlyWire 630 graph: 127,400 neurons and 14,687,178 stored
+directed connections**. Mouth contact can drive a calculated neural response,
+physical proboscis movement and consumption of finite food or water portions.
+
+[Run the browser environment](#interactive-environment-in-the-browser) ·
+[Feeding and survival](docs/habitat.md) ·
+[Neural-to-body validation](docs/motor-link.md)
+
+## Now in the browser: feeding and survival
+
+![NETSPHERE browser showing the physical fly, energy and water bars, a completed apple-contact response and measured neural activity](docs/media/browser-survival.png)
+
+*Actual browser capture after a world-triggered feeding response. Body poses and
+neural traces are measured; energy and water are explicitly simplified reserves.*
+
+- **Finite apple and water portions.** Offer one at the mouth or place it on a
+  nearby surface. Native mouth overlap gates the taste neurons; measured MN9
+  spikes drive the rostrum through an experimental adapter. Intake additionally
+  requires physical mouth movement and contact.
+- **Visible energy and water.** Each starts at 70%. An apple portion supplies
+  up to 20 energy points; a water portion supplies up to 20 water points. Empty
+  portions disappear. The reserves decrease on executed physical time and freeze
+  with **Pause**. Exhausting either reserve ends the simulated life; **New life**
+  starts another reserve experiment without resetting the body's pose.
+- **Inspect and compare.** Sugar, water, bitter and antennal presets have baseline
+  and blocked-path comparisons, measured outcomes and a shared **Stop**.
+  The transparent inspector shows spikes, adapter drive and joint motion.
+  Direct stimulus buttons are experiments and do not supply food.
+
+The implemented loop is **mouth contact → neural response → physical feeding
+movement → finite intake → reserves and source depletion**. Food removal feeds
+back into sensory input. The brain runs bounded, rest-start responses; this is
+**not continuous autonomy or biological metabolism**. Smell, food seeking,
+walking and flight are not connected in the browser yet.
+
+Validation includes the real full graph and anatomy, zero-input and blocked-motor
+controls, resource conservation, death and restart, physical-time Pause, and
+desktop/mobile browser checks. Apple and water each transferred their 20-point
+portion to the correct reserve; baseline, blocked, distant and direct-preset
+controls transferred zero. A resting seven-second observation advanced the
+reserves without generating any new 3D frames.
+[Protocols, measured results and resource bounds](docs/habitat.md#resource-bounds-and-verification).
+
+## Recorded flight — a separate pipeline
 
 The animal is the anatomically detailed [flybody](https://github.com/TuragaLab/flybody) model of *Drosophila melanogaster* (Google DeepMind and HHMI Janelia, *Nature* 2025). In the separate recorded-flight pipeline, its pretrained controller runs on CUDA, MuJoCo Warp integrates the body and wing aerodynamics at 20 kHz, and a geometric navigator steers the fly through the collidable interior. Every frame of those recordings comes from the integrated physical state.
 
@@ -23,7 +56,7 @@ The animal is the anatomically detailed [flybody](https://github.com/TuragaLab/f
 
 The full 60-second take, its metrics and the validation files are attached to the [v0.1.0 release](https://github.com/bitdeep/fly-netsphere/releases/tag/v0.1.0).
 
-**New preview — a fly living in the NETSPHERE, from its viewpoint.**
+**Recorded-flight preview — the NETSPHERE from the fly's viewpoint.**
 [Watch the stabilized 60-second recording](https://github.com/bitdeep/fly-netsphere/releases/download/pov-stabilization-preview-1/blame_pov_60s-fly_city_stabilized.mp4) of the updated megastructure. The camera follows the physical head with a level horizon; the same flight completes 1.2 million physics steps with zero world contacts. [Camera comparison, validation and replay instructions](docs/stabilized-pov.md).
 
 ## What this is, and what it is not
@@ -100,7 +133,13 @@ Open **Objects**, select an item and choose **Offer at mouth** to observe a
 contact response, or **Place in world** and click a nearby surface. Only mouth
 contact supplies taste: distant fruit does not attract the animal yet.
 Up to four objects share the existing scene. **React to objects** gates world
-input; each placement can evoke one bounded trial.
+input. Finite apple/water portions can evoke another bounded trial after rest
+and a two-second cooldown when the corresponding reserve is below 95%.
+Both reserves start at 70% and decrease on executed simulation time. Apple
+replenishes energy; water replenishes water, only during measured feeding contact.
+An empty portion disappears. **Pause** freezes reserves, and **New life** becomes
+available after either reserve runs out. These are game-scale survival rules,
+not simulated digestion or neural hunger. Direct stimulus buttons supply no food.
 Use **Focus** to inspect the head and **Neural activity** to open the transparent
 inspector. Hover, focus or tap its components and numbers for explanations;
 point along a graph to inspect measured samples. Actions work with the panel closed.
@@ -203,6 +242,9 @@ scripts/
   neural_lab.py        bounded on-demand trials and measured activity telemetry
   motor_bridge.py      shared-clock taste → FlyWire → MN9 → native rostrum servo
   habitat.py           four taste volumes, anatomical contact and gated sensory input
+  survival.py          finite energy/water reserves, physical-time drain and death
+  validate_survival.py real-graph intake controls, source conservation and lifecycle
+  test_survival.py     data-free reserve conservation and terminal-state checks
   validate_habitat.py   contact, removal, neutral controls, isolation and object bounds
   validate_motor_bridge.py causal motor controls, actuator isolation and clock checks
   fetch_neural_reference.py, prepare_neural_reference.py, validate_neural_reference.py
@@ -235,7 +277,7 @@ Dockerfile, docker-compose.yml, requirements.txt, requirements.lock
 - flybody is fetched at commit `d015e9b` with a verified tarball hash. The only local change is [one patch](patches/flybody-lazy-plot-imports.patch) that defers the matplotlib and IPython imports so the package loads without them.
 - Policies and the flight dataset come from the flybody Figshare deposit ([10.25378/janelia.25309105](https://doi.org/10.25378/janelia.25309105)) and are hash-checked after download.
 - Every `metrics.json` records the SHA-256 of the scripts, the checkpoint, the recorded states and the compiled model, so a take can be traced to the exact code that produced it.
-- GitHub CI checks Python, shell and browser-module syntax, verifies both Python
+- GitHub CI checks reserve conservation/lifecycle, Python, shell and browser-module syntax, verifies both Python
   dependency locks and applies the anatomy import patch to the pinned upstream
   source. It runs on pull requests and `main`; it does not allocate a GPU or
   download the full neural dataset. Physical and neural comparisons run locally

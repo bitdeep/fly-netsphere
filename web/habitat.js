@@ -16,6 +16,7 @@ export function createHabitat(descriptor, scene, command, invalidate, focus) {
   });
   let selected = 'fruit', state, connected = false, pending = false, placing = false;
   let revision = -1, renderedControls = '';
+  const rows = new Map();
   function hide() { $('habitat-panel').hidden = true; $('habitat-open').setAttribute('aria-expanded', 'false'); }
   function setPlacing(value) {
     placing = value;
@@ -99,15 +100,25 @@ export function createHabitat(descriptor, scene, command, invalidate, focus) {
       if (changed) invalidate();
       $('habitat-status').textContent = next.status;
       $('habitat-count').textContent = `${next.objects.length} / ${descriptor.capacity}`;
-      $('habitat-objects').replaceChildren();
+      for (const [id, row] of rows) {
+        if (!next.objects.some((item) => item.id === id)) {
+          row.remove(); rows.delete(id);
+        }
+      }
       for (const item of next.objects) {
-        const row = document.createElement('li'), text = document.createElement('span');
-        text.textContent = `${kinds.get(item.kind).label} · ${item.used ? 'Contact recorded' : 'Waiting for contact'}`;
-        const remove = document.createElement('button');
-        remove.textContent = '×';
-        remove.setAttribute('aria-label', `Remove ${kinds.get(item.kind).label} ${item.id}`);
-        remove.addEventListener('click', () => send({ action: 'object_remove', id: item.id }));
-        row.append(text, remove); $('habitat-objects').append(row);
+        let row = rows.get(item.id);
+        if (!row) {
+          row = document.createElement('li');
+          const text = document.createElement('span'), remove = document.createElement('button');
+          remove.textContent = '×';
+          remove.setAttribute('aria-label', `Remove ${kinds.get(item.kind).label} ${item.id}`);
+          remove.addEventListener('click', () => send({ action: 'object_remove', id: item.id }));
+          row.append(text, remove); $('habitat-objects').append(row);
+          rows.set(item.id, row);
+        }
+        const remaining = item.remaining === null ? '' : `${Math.round(item.remaining / descriptor.portion_capacity * 100)}% left · `;
+        const label = `${kinds.get(item.kind).label} · ${remaining}${item.used ? 'Contact recorded' : 'Waiting for contact'}`;
+        if (row.firstChild.textContent !== label) row.firstChild.textContent = label;
       }
       renderedControls = ''; renderControls();
     },

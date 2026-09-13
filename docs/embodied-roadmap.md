@@ -4,6 +4,9 @@ The current browser has a real FlyWire-derived LIF graph, a physical flybody,
 direct sensory experiments and [world taste contact](habitat.md). Only the
 proboscis motor link is connected. A contact response starts from neural rest
 and has a finite clock; it is not an autonomous animal.
+Finite apple/water portions and simplified survival reserves now close the
+resource-accounting loop. Reserve deficits schedule bounded contact responses;
+they are not yet encoded as neural hunger or thirst signals.
 
 ## The missing layer
 
@@ -44,6 +47,9 @@ be explicit in the product and its validation.
 1. **World contact — implemented:** bounded taste objects, measured anatomical
    contact, full-graph neural response and one allowlisted motor link. Verify
    absence of response without contact and changed input after source removal.
+   **Survival prototype — implemented:** finite source-to-reserve transfers
+   during measured feeding contact, physical-time drain, Pause and persistent
+   terminal death until an explicit new life. No modeled digestion or foraging.
 2. **Persistent neural state:** replace discrete rest-start experiments with a
    bounded session that preserves voltages, delayed spikes and internal state.
    Measure sustained CPU/RAM before increasing activity or sensory coverage.

@@ -20,6 +20,7 @@ from city_world import City
 from passive_fly import FLY_ID, attach_fly, describe_fly, initialize_fly
 from prepare_browser_fly import CACHE
 from habitat import Habitat, attach_objects
+from survival import Survival, DESCRIPTOR as SURVIVAL_DESCRIPTOR
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,6 +60,7 @@ class Environment:
         self.data = mujoco.MjData(self.model)
         initialize_fly(self.model, self.data)
         self.habitat = Habitat(self.model, self.data)
+        self.survival = Survival()
         self.fly_description, self.fly_body_ids = describe_fly(self.model, fly_manifest)
         self.fly_body_mask = np.zeros(self.model.nbody, dtype=bool)
         self.fly_body_mask[self.fly_body_ids] = True
@@ -169,6 +171,7 @@ class Environment:
             "neural": self.neural.descriptor if self.neural else None,
             "motor": self.motor.descriptor if self.motor else None,
             "habitat": self.habitat.descriptor,
+            "survival": SURVIVAL_DESCRIPTOR,
             "probe": {"radius": PROBE_RADIUS, "start": PROBE_START},
             "views": [
                 {"id": "gallery", "title": "South gallery", "position": [-50, -35, 16],
@@ -195,6 +198,8 @@ class Environment:
                          or action == "motor_trial" and set(command) == {"action", "mode", "stimulus"})):
                 if self.neural is None:
                     raise ValueError("The neural lab is not enabled in this environment")
+                if not self.survival.alive:
+                    raise ValueError("The fly has died. Start a new life before running a trial.")
                 if self.motor.active or self.neural.snapshot()["status"] == "running":
                     raise ValueError("A neural trial is already running")
                 if action == "motor_trial":
@@ -208,6 +213,8 @@ class Environment:
                     self.neural.start(command["mode"])
             elif action == "motor_stop" and set(command) == {"action"}:
                 if self.motor:
+                    if self.motor.active and self.motor.state.get("source"):
+                        self.habitat.set_enabled(False)
                     self.motor.finish()
             elif action == "neural_stop" and set(command) == {"action"}:
                 if self.neural:
@@ -219,6 +226,11 @@ class Environment:
                 self.habitat.remove(command["id"])
             elif action == "reactive_senses" and set(command) == {"action", "enabled"}:
                 self.habitat.set_enabled(command["enabled"])
+            elif action == "life_restart" and set(command) == {"action"}:
+                if self.survival.alive:
+                    raise ValueError("A new life can start only after death")
+                self.survival.restart()
+                self.habitat.next_sample = 0.
             elif action == "pause" and set(command) == {"action", "paused"}:
                 if not isinstance(command["paused"], bool):
                     raise ValueError("paused must be boolean")
@@ -269,7 +281,7 @@ class Environment:
             self.fly_contact_count = count
 
     def snapshot(self, pose_revision=None, trail_version=None, neural_revision=None,
-                 motor_revision=None, habitat_revision=None):
+                 motor_revision=None, habitat_revision=None, survival_revision=None):
         with self.lock:
             state = {
                 "sequence": self.sequence, "time": float(self.data.time),
@@ -307,7 +319,20 @@ class Environment:
             state["habitat_revision"] = self.habitat.revision
             if habitat_revision != self.habitat.revision:
                 state["habitat"] = self.habitat.snapshot()
+            survival = self.survival.snapshot()
+            state["survival_revision"] = survival["revision"]
+            if survival_revision != survival["revision"]:
+                state["survival"] = survival
             return state
+
+    def _advance_survival(self, seconds):
+        """Runs on executed physics blocks only, under the existing state lock."""
+        if self.survival.advance(seconds):
+            if self.motor:
+                self.motor.finish()
+            if self.neural:
+                self.neural.cancel_trial()
+        self.habitat.consume(self.motor, self.survival, seconds)
 
     def _run(self):
         previous = time.monotonic()
@@ -335,14 +360,17 @@ class Environment:
                                 block = min(10, remaining) if self.data.ntree_awake else remaining
                                 mujoco.mj_step(self.model, self.data, nstep=block)
                             remaining -= block
+                            self._advance_survival(block*self.model.opt.timestep)
                             self._sample_contacts()
                             if (self.habitat.enabled and self.habitat.objects
+                                    and self.survival.alive
                                     and self.data.time >= self.habitat.next_sample):
                                 was_running = bool(self.motor and self.motor.active)
                                 self.habitat.sample(
                                     self.motor,
                                     bool(self.neural and self.neural.snapshot()["status"] == "running"),
-                                    bool(self.data.tree_asleep[self.fly_tree] >= 0))
+                                    bool(self.data.tree_asleep[self.fly_tree] >= 0),
+                                    self.survival)
                                 if not was_running and self.motor and self.motor.active:
                                     self.next_pose_time = 0.
                             if self.probe_active and len(self.probe_trail) < 500:
@@ -447,9 +475,10 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 pose_revision = trail_version = neural_revision = motor_revision = habitat_revision = None
+                survival_revision = None
                 while not env.stop.is_set():
                     state = env.snapshot(pose_revision, trail_version, neural_revision,
-                                         motor_revision, habitat_revision)
+                                         motor_revision, habitat_revision, survival_revision)
                     payload = json.dumps(state, separators=(",", ":"))
                     self.wfile.write(f"data: {payload}\n\n".encode())
                     self.wfile.flush()
@@ -458,6 +487,7 @@ class Handler(BaseHTTPRequestHandler):
                     neural_revision = state.get("neural_revision")
                     motor_revision = state.get("motor_revision")
                     habitat_revision = state["habitat_revision"]
+                    survival_revision = state["survival_revision"]
                     active = not state["fly"]["sleeping"] or (state["probe"]["active"] and not state["probe"]["contact_seen"])
                     interval = POSE_INTERVAL if active and not state["paused"] else 1
                     running = state.get("neural_running") or (state.get("motor_running") and not state["paused"])
@@ -496,6 +526,8 @@ class Handler(BaseHTTPRequestHandler):
             "/inspect.js": ("web/inspect.js", "text/javascript; charset=utf-8"),
             "/habitat.js": ("web/habitat.js", "text/javascript; charset=utf-8"),
             "/habitat.css": ("web/habitat.css", "text/css; charset=utf-8"),
+            "/survival.js": ("web/survival.js", "text/javascript; charset=utf-8"),
+            "/survival.css": ("web/survival.css", "text/css; charset=utf-8"),
             "/actions.css": ("web/actions.css", "text/css; charset=utf-8"),
             "/neural.css": ("web/neural.css", "text/css; charset=utf-8"),
             "/dev-reload.js": ("web/dev-reload.js", "text/javascript; charset=utf-8"),

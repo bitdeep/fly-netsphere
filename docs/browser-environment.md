@@ -26,11 +26,21 @@ fly autonomously. [Motor protocol and causal validation](motor-link.md).
 Choose **Offer at mouth**, or **Place in world** followed by a surface click near
 the fly. Geometric mouth contact gates the selected sensory neurons, sampled
 every 5 ms during a response. **React to objects** disables this input; remove
-objects individually. Each placement can evoke one 500 ms rest-start neural
-trial after the body settles. There is no attraction to distant fruit or
+objects individually. Contact can evoke a 500 ms rest-start neural
+trial after the body settles. Finite apple/water portions can retry after at least
+two simulated seconds while their reserve is below 95%. There is no attraction to distant fruit or
 continuous autonomous brain state yet. These stationary, permeable taste cues
 do not apply forces or model solid food, digestion or odor.
 [Gallery controls, encoding and checks](habitat.md).
+
+**Energy** and **Water** remain visible above the stimulus buttons. Each starts
+at 70%; physical time drains 0.2 and 0.3 percentage points per second respectively.
+Contact plus measured MN9-driven rostrum motion transfers the matching reserve
+from a finite portion. Empty portions disappear. Pause freezes the reserves;
+either reaching zero ends the simulated life and cancels neural/motor trials.
+**New life** restores starting reserves without changing body pose or objects.
+This is explicit game-scale accounting, not biological metabolism or a brain
+hunger circuit. Frontend reload preserves life state; backend restart resets it.
 
 **Antenna** retains a separate connectome assay:
 antennal stimulus → FlyWire LIF dynamics → neural readouts → disconnected muscles.
@@ -195,7 +205,8 @@ The server only serves an allowlist of frontend assets and read endpoints:
 `/api/world`, `/api/state`, `/api/events`, `/health`, plus `/api/dev-version` in
 development mode. `POST /api/command` accepts bounded drop, pause, speed,
 `neural_trial`, `neural_stop`, `motor_trial`, `motor_stop`, `object_place`,
-`object_remove` and `reactive_senses` commands with same-origin JSON.
+`object_remove`, `reactive_senses` and `life_restart` commands with same-origin JSON.
+`life_restart` accepts no parameters and is rejected while the animal is alive.
 Trial mode must be `stimulus`, `baseline` or `blocked`; only one neural or motor
 trial runs at a time. `motor_trial` optionally accepts `stimulus`: exactly
 `sugar`, `water` or `bitter`, defaulting to `sugar` for older clients.
@@ -219,8 +230,20 @@ loop, and unchanged control state causes no repeated DOM writes.
 `web/habitat.js` shares one small sphere geometry across four preallocated
 meshes, with no shadow pass or animation loop. Object lists are sent by revision,
 and the scene redraws only when their visible geometry changes. Contact sensing
-runs on physical time in the same worker; it stops once all placed sources
-have evoked their one allowed response.
+runs on physical time in the same worker. Used nonfood controls stop sensing;
+remaining apple/water portions can retry under the documented rest/cooldown
+gates. Death stops sensing. `web/survival.js` updates DOM meters on changed state
+without requesting 3D redraws; its small revisioned packet contains no anatomy.
+
+The renderer already supports richer textures: Three.js
+[MeshStandardMaterial](https://threejs.org/docs/pages/MeshStandardMaterial.html)
+provides color, normal, roughness, metalness and environment maps. The next visual
+pass should improve authored materials, UVs and lighting within the existing
+frame/memory budget. The official
+[KTX2Loader](https://threejs.org/docs/pages/KTX2Loader.html) supports compressed
+GPU textures; it is a candidate for larger assets, not yet enabled here. Changing
+the renderer is not required for that material workflow. No external assets or
+new runtime dependencies were introduced for reserves.
 
 ## Validation
 

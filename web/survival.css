@@ -1,0 +1,20 @@
+.life-reserves{margin:0 0 10px}
+.reserve-meters{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.reserve-label{display:flex;justify-content:space-between;font:10px monospace;color:#e7c18a;margin-bottom:5px}
+#water-reserve .reserve-label{color:#9ccfe3}
+.life-reserves meter{appearance:none;display:block;width:100%;height:5px;border:0;border-radius:3px;background:#26363b}
+.life-reserves meter::-webkit-meter-bar{height:5px;border:0;border-radius:3px;background:#26363b}
+.life-reserves meter::-webkit-meter-optimum-value{background:#dbac65;border-radius:3px}
+.life-reserves meter::-moz-meter-bar{background:#dbac65;border-radius:3px}
+#water-meter::-webkit-meter-optimum-value{background:#80c7df}
+#water-meter::-moz-meter-bar{background:#80c7df}
+.reserve.low .reserve-label,.life-reserves.dead #life-status{color:#f1a294}
+.life-caption{display:flex;align-items:center;justify-content:space-between;min-height:19px;margin-top:4px;font:9px monospace;color:#a8beb4}
+#life-restart{padding:2px 7px;border:1px solid #d391805c;border-radius:3px;color:#ffd2c4;background:#d3918014;font:9px monospace}
+#fly-panel,#toast{bottom:375px}
+:root .neural-panel,:root .habitat-panel{max-height:calc(100vh - 510px)}
+@media(max-width:1000px){#fly-panel{bottom:375px}}
+@media(max-width:700px){#fly-panel,#toast{bottom:365px}:root .neural-panel,:root .habitat-panel{max-height:calc(100vh - 463px)}}
+@media(max-height:650px) and (min-width:701px){:root .neural-panel,:root .habitat-panel{max-height:calc(100vh - 456px)}}
+@media(min-width:1200px){:root .neural-panel,:root .habitat-panel{width:min(310px,calc((100vw - 660px)/2 - 40px));max-height:calc(100vh - 220px)}}
+@media(min-width:1200px) and (max-height:650px){:root .neural-panel,:root .habitat-panel{max-height:calc(100vh - 195px)}}

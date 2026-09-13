@@ -15,6 +15,8 @@ jobs:
           python-version: "3.10"
       - name: Byte-compile scripts
         run: python -m compileall -q scripts
+      - name: Survival reserve conservation and lifecycle
+        run: python scripts/test_survival.py
       - name: Shell syntax
         run: for f in scripts/*.sh; do bash -n "$f"; done
       - name: Browser module syntax
