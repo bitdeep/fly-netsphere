@@ -95,6 +95,7 @@ compilation.
 | [Browser environment](docs/browser-environment.md) | Setup, controls and development |
 | [Feeding and survival](docs/habitat.md) | Contact, consumption, reserves and tests |
 | [Neural model](docs/neural-reference.md) | Data sources, equations and numerical checks |
+| [Sensory experiments](docs/sensory-feasibility.md) | Why the first odor and adaptive models failed to steer |
 | [Brain-to-body link](docs/motor-link.md) | Motor adapter and causal comparisons |
 | [Delivery plan](docs/embodied-roadmap.md) | Remaining work and end-to-end acceptance for food seeking and flight |
 | [Flight recordings](docs/stabilized-pov.md) | Camera, downloads and replay validation |

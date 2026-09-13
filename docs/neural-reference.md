@@ -20,6 +20,9 @@ This guide is the numerical reference for those bounded experiments. The
 readout and resource checks before using the model for seeking. Agreement on
 short trials does not establish stable continuous activity or useful locomotor
 commands. A future solver port must pass comparisons with this reference.
+The subsequent [sensory feasibility measurements](sensory-feasibility.md) found
+persistent odor-driven activity in this model. A separate adaptive variant
+recovered rest but failed directional control; neither probe changes the live lab.
 
 ## Protocol and visible signals
 
