@@ -100,6 +100,40 @@ pass this gate; it is not ready for motor integration. The isolated walking
 probe starts gate 2; the recorded flight controller supplies a cruise reference,
 not a validated transition system.
 
+## Next investigations
+
+The navis and hae sources were inspected on 2026-09-13. Neither candidate is
+integrated into the project; their reported learning and performance results
+remain unverified locally. These investigations support the existing gates:
+
+| Investigation | Place in the plan | Evidence needed before adoption |
+|---|---|---|
+| **Anatomy with navis** | First: resolve gate 1's sensory and steering candidates | A small, sourced table of FlyWire 630 IDs, sides, cell types and connections; morphology comparisons with explicit units and brain spaces |
+| **Continuous directional response** | Next in gate 1, using the checked mappings | Repeated left/right cues and removal without resetting neural state; useful readouts on the second cue; no-input and blocked-path controls |
+| **Event-driven C/WASM core** | Address the measured neural runtime shortfall in gates 1 and 4 | Compare the same full graph and inputs with the reference; check spike IDs/ticks, state tolerances, sleep/wake and chunk continuity; measure CPU, memory and coupled-clock performance |
+| **Learning from intake** | Experimental extension once repeated sensory responses work, supporting gates 1 and 3 | Cue-specific changes that persist; learning-off and unpaired-feedback controls; improved behavior on unseen placements, without giving the controller source coordinates |
+
+**navis is an analysis tool in this plan.** Use it on the small set of candidate
+neurons before considering larger datasets. NBLAST can suggest morphological
+matches; it does not establish steering function. Keep skeleton/mesh versions,
+coordinate transforms and units explicit. Aligning two brain spaces does not
+make their neuron IDs interchangeable, and the default neuPrint hemibrain example
+is not our FlyWire 630 specimen.
+
+**The C/WASM candidate addresses computation.** The useful idea is to skip
+integration when a bound proves a neuron cannot reach threshold before another
+input, then advance its state when needed. Preserve every connection and the
+coupled clock. Faster execution does not resolve persistent activity or missing
+direction; verify resource bounds and numerical agreement before replacing any
+solver.
+
+**Learning is a separate model experiment.** The proposed feedback is the measured
+replenishment of the reserve currently in deficit, associated with recent sensory
+activity. This is an engineering hypothesis. Specify the plastic synapses,
+feedback rule and limits before testing, preserve the fixed reference assays,
+and require the learned response to work with continuous state and the full graph.
+An isolated circuit assay may diagnose learning but cannot close the foraging gate.
+
 ## Acceptance through the browser
 
 Use a dedicated fixture with one live fly, initial 70% reserves, reactive senses
@@ -136,19 +170,49 @@ separate 0.15-core antennal duty budgets. Report actual rendering FPS separately
 from physics speed; target 30 FPS while moving, with no idle/hidden-tab draws.
 Check desktop and 390×844 controls. A guard trip is a failed run.
 
-## Reference and deferred work
+## Reference projects and limits
 
-The inspected hae [main scene](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/suji/flag.js)
-uses programmed food approach and interpolated flight; its
-[maze](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/meiro/main.js)
-uses handwritten navigation. It demonstrates a complete visible loop, but
-does not validate this project's neural-to-physical path.
-Its [WASM core notes](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/flybrain/README.md)
-report runaway activity for some v783 inputs. Our separate
-[v630 odor measurements](sensory-feasibility.md) now also show persistent activity;
-the protocols and releases are distinct. Any reuse requires inspection
-of pinned code, dependencies and licenses, isolated execution and numerical
-comparison with our reference.
+**navis — inspected commit
+[cb9a591](https://github.com/navis-org/navis/tree/cb9a5915b6b3587cb81154f4f77ffc62fe12b03a).**
+It provides morphology analysis, NBLAST, template transforms and visualization,
+with Rust-accelerated functions. Its
+[coordinate guidance](https://github.com/navis-org/navis/blob/cb9a5915b6b3587cb81154f4f77ffc62fe12b03a/scripts/llms_preamble.md)
+warns that comparisons across incompatible brain spaces can return plausible
+but incorrect results. The
+[neuPrint interface](https://github.com/navis-org/navis/blob/cb9a5915b6b3587cb81154f4f77ffc62fe12b03a/docs/examples/4_remote/tutorial_remote_00_neuprint.py)
+requires a dataset selection and authenticated access. Plan offline analysis in
+Docker with selected dependencies; keep Three.js for the browser and flybody for
+physical motor execution. Blender exports can wait for presentation work.
+
+**hae — inspected commit
+[edb1532](https://github.com/satorunet/hae/tree/edb1532fbe83ae3d21adb12072c12f3f86c4e607).**
+Its [C core](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/flybrain/src/brain.c)
+contains event-driven integration and an added dopamine-gated plasticity rule.
+The roughly 19 KB WASM file is executable code; graph data and learned weights
+are loaded separately. The
+[conditioning experiment](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/flybrain/test/learn.mjs)
+is a useful reference for paired and control odors, not a reproduced result here.
+
+The [character reader](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/juku/reader.mjs)
+uses v783, disables outgoing transmission outside the mushroom-body circuit and
+resets neural state for each image while retaining learned gains. It assigns
+output groups to letters and receives the correct label during error feedback.
+This does not demonstrate a continuously operating full brain finding resources.
+Our separate [v630 odor measurements](sensory-feasibility.md) also show persistent
+activity; the releases and protocols remain distinct.
+
+The [main scene](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/suji/flag.js)
+uses predefined writing strokes with inverse kinematics, programmed food approach
+and interpolated flight. Its
+[worker](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/juku/worker.js)
+uses writing speed to drive displayed motor-neuron activity; that display does
+not prove those neurons caused the movement. These animations do not replace
+our neural-command-to-physical-actuator checks.
+
+Any reuse requires pinned code/data, dependency and license review, bounded
+isolated execution and the relevant numerical and behavioral comparisons.
+
+## Deferred work
 
 Touch/escape, learned vision, a reconstructed VNC, multiple flies, city expansion
 and texture polish wait until this loop passes. [Earlier city ideas](netsphere-ideas.md)

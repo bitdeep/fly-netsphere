@@ -66,6 +66,18 @@ learned leg and wing controllers. The [feeding guide](docs/habitat.md) explains
 the existing contact loop; the [delivery plan](docs/embodied-roadmap.md) covers
 continuous sensing and movement.
 
+## Next steps
+
+- Check sensory and steering neuron identities with **navis**, then establish
+  reliable responses to changing cues.
+- Evaluate **event-driven C/WASM simulation** to reduce the neural workload.
+- Explore **learning from food and water intake** once repeated sensory responses
+  work.
+
+These are planned investigations. The [roadmap](docs/embodied-roadmap.md#next-investigations)
+sets their order, evidence requirements and limits; physical walking, flight
+and the complete feeding loop remain the delivery goal.
+
 ## Watch it fly
 
 There is also a separate flight-recording pipeline. It uses flybody's pretrained
