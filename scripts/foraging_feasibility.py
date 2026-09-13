@@ -97,10 +97,30 @@ def load_groups(graph, family="odor", annotations=ANNOTATIONS):
                     found[target.id] = value
         if [len(found.get(k, [])) for k in ("neu_sugar_left", "neu_sugar", "ids_mn9")] != [10, 21, 2]:
             raise ValueError("Published bilateral taste groups are missing")
-        groups = {"left": [lookup[i] for i in found["neu_sugar_left"]],
-                  "right": [lookup[i] for i in found["neu_sugar"]]}
-        for side, identifier in zip(("left", "right"), found["ids_mn9"]):
-            readouts["MN9:"+side] = [lookup[identifier]]
+        sugar_ids = set(found["neu_sugar_left"]+found["neu_sugar"])
+        if len(sugar_ids) != 31:
+            raise ValueError("Published taste cohorts overlap or contain duplicates")
+        groups = {"left": [], "right": []}
+        # The notebook's hemisphere labels oppose the annotation's sensory
+        # nerve-entry sides. Use annotation sides consistently for inputs/outputs.
+        # Notebook MN9 list order likewise does not establish anatomical side.
+        with annotations.open() as stream:
+            for row in csv.DictReader(stream, delimiter="\t"):
+                identifier = int(row["root_id"])
+                if identifier in sugar_ids:
+                    if row["side"] not in groups:
+                        raise ValueError("Published sugar neuron has no annotated side")
+                    groups[row["side"]].append(lookup[identifier])
+                if identifier not in found["ids_mn9"]:
+                    continue
+                side = row["side"]
+                if side not in groups or "MN9:"+side in readouts:
+                    raise ValueError("Published MN9 sides are missing or ambiguous")
+                readouts["MN9:"+side] = [lookup[identifier]]
+        if not all("MN9:"+side in readouts for side in groups):
+            raise ValueError("Published MN9 neurons are missing from the annotations")
+        if (len(groups["left"]), len(groups["right"])) != (21, 10):
+            raise ValueError("Taste cohort sides differ from the pinned annotations")
     groups = {side: np.asarray(sorted(ids), dtype=np.int64) for side, ids in groups.items()}
     if len(np.unique(np.concatenate(list(groups.values())))) != sum(map(len, groups.values())):
         raise ValueError("Sensory groups overlap or contain duplicate identifiers")

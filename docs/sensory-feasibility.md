@@ -44,9 +44,13 @@ spike IDs and ticks**. After input ended, the final four 50 ms bins contained
 our v630 model; it is not a conclusion inferred from another project's v783.
 
 A separate taste probe used the notebook's literal `neu_sugar_left` (10) and
-`neu_sugar` (21) IDs, extracted without executing notebook cells. At 150 Hz it
-produced 3,786 spikes, including MN9 counts of 23/18, then returned to silence.
-The candidate directional readouts remained almost silent. A feeding response
+`neu_sugar` (21) IDs, extracted without executing notebook cells. Their notebook
+hemisphere names oppose the annotation's sensory nerve-entry sides: the final
+probe uses the annotated 21 left / 10 right inputs, and resolves MN9 sides from
+annotations too. Notebook list order is not treated as anatomical side.
+At 150 Hz, this corrected protocol produced 3,622 spikes, MN9 right/left counts
+of 22/16 and zero candidate descending spikes, then returned to silence.
+At 50 Hz only one candidate descending spike occurred. A feeding response
 does not establish steering, and distal sugar input is not a validated odor model.
 
 ## Adaptive model and results
