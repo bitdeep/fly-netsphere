@@ -1,4 +1,8 @@
-# A fly living in the NETSPHERE — stabilized POV
+# Recorded flight — stabilized POV
+
+This is an offline flight recording with a learned motor policy and geometric
+navigator. Browser food seeking and flight remain unfinished; see the
+[delivery plan](embodied-roadmap.md). The measurements below apply to this take.
 
 [**Watch the full 60-second video · 720p · 30 fps**](https://github.com/bitdeep/fly-netsphere/releases/download/pov-stabilization-preview-1/blame_pov_60s-fly_city_stabilized.mp4)
 
@@ -59,7 +63,7 @@ Video SHA-256:
 b7b88f119f66ceaf782f92d5bcbedbe7b3b22d258d8416f0bd260323e60786f7
 ```
 
-After the [repository setup](../README.md#quick-start), download the published take and restore its filenames:
+After the [recording setup](../README.md#watch-it-fly), download the published take and restore its filenames:
 
 ```bash
 mkdir -p out/pov-preview

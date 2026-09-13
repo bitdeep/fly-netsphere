@@ -4,6 +4,11 @@ The browser can now turn **simulated FlyWire motor-neuron spikes into a physical
 flybody joint response**. This first link uses published taste-sensory neurons
 and the MN9 motor pair. It drives only the rostrum, part of the proboscis.
 
+This is the implemented mouth-link reference. The
+[delivery plan](embodied-roadmap.md) defines the separate learned leg/wing
+integration. The finite protocol and rostrum-only allowlist below belong to this
+assay; locomotion requires its own validated actuator and clock contract.
+
 Open **http://localhost:8089** and use **Feed**, **Water** or **Bitter** in the
 action bar. **Feed** stimulates sugar neurons: it models feeding initiation, not
 eating or digestion. **Focus** points the observer at the head; drag to choose

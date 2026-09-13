@@ -1,8 +1,9 @@
 # fly-netsphere
 
-fly-netsphere is an experiment in bringing a simulated fruit fly to life inside
-a city inspired by *BLAME!*. Offer food and water in your browser, watch its mouth
-respond, and follow the neural signals behind the movement.
+fly-netsphere is building a simulated fruit fly that can explore a city inspired
+by *BLAME!* and find food and water. Today, you can offer food at its mouth in
+your browser, watch the neural response move its mouth, and keep it alive with
+finite portions and visible energy and water reserves.
 
 ![NETSPHERE browser showing the physical fly, energy and water bars, a completed apple-contact response and measured neural activity](docs/media/browser-survival.png)
 
@@ -20,8 +21,10 @@ zero, the fly dies; **New life** replenishes its reserves. **Pause** freezes tim
 The separate **Feed**, **Water**, **Bitter** and **Antenna** buttons let you test
 neural responses, but do not supply food.
 
-The fly currently feeds on contact. It cannot yet smell distant food, seek it
-out, walk or fly in the browser. The next goal is to connect those behaviors.
+**Seeking and browser flight are not implemented yet.** An apple placed nearby
+will not attract the fly. The [delivery plan](docs/embodied-roadmap.md) defines
+the remaining work and the test that closes it: distant source → physical
+approach and landing → consumption → renewed search.
 
 ## Run locally
 
@@ -58,8 +61,10 @@ Contact and measured movement allow intake; consuming a portion removes that
 source of sensory input.
 
 Neural responses run as short trials. Energy, water and death follow simple
-survival rules; digestion and continuous brain activity are future work.
-The [feeding guide](docs/habitat.md) explains the loop and its validation.
+survival rules. The planned locomotion combines neural behavioral commands with
+learned leg and wing controllers. The [feeding guide](docs/habitat.md) explains
+the existing contact loop; the [delivery plan](docs/embodied-roadmap.md) covers
+continuous sensing and movement.
 
 ## Watch it fly
 
@@ -91,7 +96,7 @@ compilation.
 | [Feeding and survival](docs/habitat.md) | Contact, consumption, reserves and tests |
 | [Neural model](docs/neural-reference.md) | Data sources, equations and numerical checks |
 | [Brain-to-body link](docs/motor-link.md) | Motor adapter and causal comparisons |
-| [Embodiment roadmap](docs/embodied-roadmap.md) | What's needed for sensing, walking and flight |
+| [Delivery plan](docs/embodied-roadmap.md) | Remaining work and end-to-end acceptance for food seeking and flight |
 | [Flight recordings](docs/stabilized-pov.md) | Camera, downloads and replay validation |
 | [Flight measurements](docs/netsphere-validation.md) | Performance and physical checks (Portuguese) |
 

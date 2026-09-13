@@ -1,73 +1,155 @@
-# From contact reflexes to embodied behavior
+# Delivery plan: seeking food and water
 
-The current browser has a real FlyWire-derived LIF graph, a physical flybody,
-direct sensory experiments and [world taste contact](habitat.md). Only the
-proboscis motor link is connected. A contact response starts from neural rest
-and has a finite clock; it is not an autonomous animal.
-Finite apple/water portions and simplified survival reserves now close the
-resource-accounting loop. Reserve deficits schedule bounded contact responses;
-they are not yet encoded as neural hunger or thirst signals.
+The next release must let one fly find and consume food and water placed away
+from its mouth, then search again when needed. Flight, landing and visible
+energy/water reserves belong to this delivery. Walking is an intermediate step.
+This is the canonical scope and acceptance plan; the linked guides describe
+what exists today.
 
-## The missing layer
+## Current status
 
-The FlyWire brain alone is not a complete walking or flight controller.
-Descending signals need a motor hierarchy that coordinates legs or wings and
-responds to the moving body. Selecting a target position must not teleport the
-fly or replace its neural response with a scripted trajectory.
+| Capability | Status |
+|---|---|
+| Physical body and city | Native MuJoCo, rendered with Three.js / WebGL 2 |
+| Taste → neural activity → mouth movement | Implemented, with causal comparisons |
+| Finite portions, reserves, depletion and death | Implemented as simplified resource accounting |
+| Distant sensing and neural need signals | Missing |
+| Neural commands → learned locomotion → browser body | Missing |
+| Search, flight, approach, landing and repeated feeding | Missing; delivery is incomplete |
 
-Two published approaches inform the next implementation:
+**Offer at mouth** tests contact feeding. An apple placed nearby produces no
+attraction. A browser reproduction on 2026-09-13 observed 25.12 seconds of
+physical time with a noncontacting apple: no changed body pose, new motor trial
+or intake. Passing [contact tests](habitat.md#resource-bounds-and-verification)
+did not cover seeking.
 
-| Approach | Useful component | Fidelity boundary |
+The [recorded flights](stabilized-pov.md) use a learned policy and geometric
+navigator in a separate offline pipeline. An exploratory walking-policy port
+has produced isolated physical movement; numerical agreement and browser
+integration remain unverified. Neither establishes browser locomotion.
+
+## The loop to build
+
+The fly starts with reserves, explores when it needs resources, approaches a
+detected source, lands and consumes it. It can rest when supplied and search
+again when needed. Uninterrupted flight is not the acceptance condition.
+
+```mermaid
+flowchart LR
+  Sources["Finite apple / water"] --> Field["Local odor / moisture fields"]
+  Field --> Sensors["Samples at the moving antennae"]
+  Reserves["Energy / water deficit"] --> Encoding["Sensory and need encoding"]
+  Sensors --> Encoding
+  Encoding --> Brain["Persistent FlyWire 630 neural state"]
+  Brain --> Commands["Measured behavioral readouts"]
+  Commands --> Policy["Learned leg / wing controllers"]
+  Policy --> Body["Native physical motion"]
+  Body --> Sensors
+  Body --> Contact["Mouth contact and MN9-driven feeding"]
+  Brain --> Contact
+  Sources --> Intake["Finite resource transfer"]
+  Contact --> Intake
+  Intake --> Sources
+  Intake --> Reserves
+  Time["Executed physical time"] --> Reserves
+```
+
+This is the **target architecture**, not the current runtime. Field equations,
+need modulation and encoding/decoding gains are engineering approximations.
+Apple uses an odor cue; water needs a separate moisture cue or explicitly
+artificial channel. A visible halo may illustrate a field; it does not steer.
+An exhausted source stops emitting and cannot replenish either reserve.
+
+## Architecture decisions
+
+- **Hybrid control:** the connectome supplies behavioral commands; validated
+  flybody policies coordinate legs/wings. Policies and command decoders receive
+  no food coordinates, object IDs or precomputed target direction.
+- **Physical movement:** native actuators produce motion. Preserve collisions
+  and aerodynamics; no pose/velocity writes, interpolated flight or episode
+  resets during a run. Cruise flight does not prove takeoff or landing.
+- **Same brain:** keep FlyWire 630 and all stored connections. Pin the provenance
+  of new sensory/readout IDs. Preserve neural state across controller updates.
+- **Same renderer:** keep Three.js / WebGL 2. The current physics and NumPy
+  neural core run on a Docker CPU backend, not WASM/WebGPU. Consider a WASM
+  solver only against measured need and numerical comparisons on this graph.
+- **Separate protocols:** retain the bounded antennal/taste assays as regression
+  tools. Their rest-start and rostrum-only rules apply to those experiments;
+  locomotion needs its own clock, actuator allowlist and cancellation contract.
+
+The runtime may enforce physical transition guards, resource limits and death.
+It must not select a source or inject steering behind a neural display. Saturated
+activity or unusable directional readouts fail the neural gate; do not hide them
+with pruning, repeated state resets or a scripted pilot.
+
+## Delivery order
+
+Complete the first failing gate before unrelated work. **All four are pending.**
+Update status only with implementation and measured evidence.
+
+| Gate | Work | Required evidence |
 |---|---|---|
-| Connectome decisions with learned motor execution | Identified descending signals select/steer validated body controllers | Learned coordination and chosen decoding gains are approximations |
-| Mapped ventral nerve cord circuitry | Connectome-constrained premotor networks and pattern generators | Needs additional data, brain–VNC correspondence and validated body coupling |
+| 1. Continuous sensory decisions | Pin bilateral sensory/readout mappings, encode separate deficits and retain neural state | Left/right responses, changes after source relocation/removal, no-input and blocked-path comparisons, bounded activity and measured runtime |
+| 2. Physical locomotion | Validate official walking inference, connect neural commands, then integrate flight and transitions | Forward/left/right/stop through actuators; blocked commands remove commanded motion; physical takeoff, sustained flight and landing |
+| 3. Find and consume | Connect fields, locomotion, mouth contact and reserves in the browser | Distant apple and water each replenish the correct reserve; exhausted sources disappear; another source is found |
+| 4. Complete release | Run actual UI, causal controls and sustained workload checks | Every acceptance case below passes on the identified commit, documentation matches and CI is green |
 
-[Eon's technical account](https://eon.systems/updates/embodied-brain-emulation)
-describes a Shiu-derived brain model with NeuroMechFly, small sets of descending
-readouts and learned imitation controllers for motor execution. Its sensor and
-motor mappings include chosen engineering gains. It does not use flybody and
-does not provide an implemented embodied escape behavior in that demonstration.
-That account supports this integration pattern, not a claim that a whole motor
-hierarchy emerges from FlyWire alone.
+**Next implementation task: gate 1.** Start with a bounded sensory/readout
+feasibility measurement. Record candidate IDs, input range and activity/runtime
+ceilings before running it. A failure needs a specific diagnosis and resolution
+before proceeding. The isolated walking probe starts gate 2; the recorded
+flight controller supplies a cruise reference, not a validated transition system.
 
-[Pugliese and colleagues' VNC study](https://pmc.ncbi.nlm.nih.gov/articles/PMC13142387/)
-and [author code](https://github.com/smpuglie/Pugliese_2026) provide a candidate
-for the second route: connectome simulations identify a walking pattern-generator
-circuit. A neural rhythm is not yet a validated six-leg controller for this
-anatomical body. Specimens, synaptic signs, neuron types, descending connections
-and joint/muscle mappings need explicit provenance and checks before integration.
+## Acceptance through the browser
 
-The repository's existing flybody flight policy is a separate learned controller.
-The walking checkpoint has not been ported. Neither currently supplies a browser
-behavior or a reconstructed neural motor layer. Changing that architecture must
-be explicit in the product and its validation.
+Use a dedicated fixture with one live fly, initial 70% reserves, reactive senses
+on and no source touching the mouth. Use **Place in world**, never **Offer at
+mouth**, for seeking tests. Save reachable left/front/right positions 1 cm from
+the initial body on an unobstructed surface within the existing placement limit.
 
-## Build and validate in stages
+The initial release targets are intake within **60 simulated seconds per source**
+and at least **0.5× physical/wall-clock speed** over the active sequence. These
+are targets, not measured performance. Test each position with three fixed seeds;
+save all nine outcomes and require all to pass. Fix coordinates, seeds and
+thresholds before tuning; document any necessary revision.
 
-1. **World contact — implemented:** bounded taste objects, measured anatomical
-   contact, full-graph neural response and one allowlisted motor link. Verify
-   absence of response without contact and changed input after source removal.
-   **Survival prototype — implemented:** finite source-to-reserve transfers
-   during measured feeding contact, physical-time drain, Pause and persistent
-   terminal death until an explicit new life. No modeled digestion or foraging.
-2. **Persistent neural state:** replace discrete rest-start experiments with a
-   bounded session that preserves voltages, delayed spikes and internal state.
-   Measure sustained CPU/RAM before increasing activity or sensory coverage.
-3. **Locomotor interface:** map identified descending outputs to a validated
-   motor layer. Test standing, start/stop, bilateral turning and recovery from
-   small perturbations, with zero-input and blocked-output comparisons.
-4. **Finding objects:** introduce sourced olfactory receptor mappings and
-   antenna-local odor sampling. Compare relocated sources, no-odor controls and
-   blocked sensory pathways; object coordinates must not become a hidden pilot.
-5. **Touch and escape:** map a measured stimulus to identified sensory pathways.
-   Add an embodied response only after its motor circuitry/controller passes
-   causal tests. Camera movement and a pointer click are not themselves neurons.
-6. **Flight and landing:** validate wing coordination and aerodynamics at their
-   required physical/control timestep, then test transitions and landing. The
-   existing CPU viewer timestep is not evidence of controlled-flight fidelity.
+| Case | Pass condition |
+|---|---|
+| Apple at a distance | Sensor changes → neural commands → physical approach → feeding; energy transfers from the finite portion until it empties |
+| Water at a distance | The same chain transfers water; that intake creates no energy |
+| Apple → water → new apple | One life completes all three, with physical flight and landing during the sequence; no body or neural-state reset |
+| Move/remove the source | Subsequent readings and commands respond; no pursuit of cached target coordinates |
+| Disable relevant senses | Source-directed behavior is lost in the comparison; no intake while senses are disabled |
+| Block neural motor commands | Sensory activity remains measurable, commanded locomotion disappears and distant food is not consumed |
+| No food / no water | Each deprivation independently causes terminal death; no further neural actuation or automatic revival |
+| Pause / Stop / New life | Freeze coupled time and reserves / cancel controller authority without automatic retry / restore reserves while preserving physical pose and objects |
 
-User commands can eventually request a destination or a behavior through a
-clearly labeled experimental input. Object seeking should instead emerge from
-the connected sensory path and motor readouts. Both require measured outcomes,
-explicit controller provenance and resource ceilings; realistic movement alone
-does not establish biological fidelity.
+Contact, baseline, bitter and conservation checks remain component regressions.
+They cannot substitute for this suite. Record body position, local sensors,
+neural readouts, actuator commands/forces, contact and resource transfers on one
+timeline, bound to code/data/controller hashes. Include a continuous capture of
+flight, landing, intake and departure; a screenshot is insufficient.
+
+Measure physical/wall time, CPU, peak RAM and physics warnings for the combined
+workload. Keep one animal, 2 CPUs / 1 GiB and the existing 0.9-core physics and
+separate 0.15-core antennal duty budgets. Report actual rendering FPS separately
+from physics speed; target 30 FPS while moving, with no idle/hidden-tab draws.
+Check desktop and 390×844 controls. A guard trip is a failed run.
+
+## Reference and deferred work
+
+The inspected hae [main scene](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/suji/flag.js)
+uses programmed food approach and interpolated flight; its
+[maze](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/meiro/main.js)
+uses handwritten navigation. It demonstrates a complete visible loop, but
+does not validate this project's neural-to-physical path.
+Its [WASM core notes](https://github.com/satorunet/hae/blob/edb1532fbe83ae3d21adb12072c12f3f86c4e607/flybrain/README.md)
+report runaway activity for some v783 inputs. That is an upstream result,
+not a reproduced finding for our v630 runtime. Any reuse requires inspection
+of pinned code, dependencies and licenses, isolated execution and numerical
+comparison with our reference.
+
+Touch/escape, learned vision, a reconstructed VNC, multiple flies, city expansion
+and texture polish wait until this loop passes. [Earlier city ideas](netsphere-ideas.md)
+are a historical backlog. Additional diagrams, recordings or interface polish
+do not close a failed behavior gate.

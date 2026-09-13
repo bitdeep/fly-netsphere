@@ -1,5 +1,10 @@
 # Finite food, survival reserves and contact reflexes
 
+This guide covers the implemented contact-feeding loop. **Food placed near the
+fly does not attract it:** distant sensing and locomotion are missing. The
+[delivery plan](embodied-roadmap.md) defines seeking-and-flight acceptance;
+offering food directly at the mouth does not satisfy it.
+
 At **http://localhost:8089**, open **Objects** in the fly action bar.
 Select **Apple**, **Water**, **Bitter** or **Neutral**, then:
 
@@ -103,9 +108,14 @@ trials without queued world responses.
 
 This closes a small sensory–motor feedback loop, **not continuous autonomy**.
 There is no neural hunger/thirst circuit, learning, foraging, walking, flight or escape controller.
-See the [embodiment roadmap](embodied-roadmap.md) for the remaining motor layer.
+See the [delivery plan](embodied-roadmap.md) for sensory and motor integration.
 
 ## Resource bounds and verification
+
+These checks establish contact feeding and reserve accounting. Their no-contact
+cases intentionally expect no response. Seeking needs the separate
+[distant-source suite](embodied-roadmap.md#acceptance-through-the-browser);
+none of the results below establishes attraction, walking or flight.
 
 Four precompiled mocap bodies carry noncolliding sensory volumes. Only their
 positions change on placement/removal; fly position and velocity are untouched.
