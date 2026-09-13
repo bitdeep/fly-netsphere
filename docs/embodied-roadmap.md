@@ -102,7 +102,7 @@ not a validated transition system.
 
 ## Next investigations
 
-The navis and hae sources were inspected on 2026-09-13. Neither candidate is
+The navis, hae and TMNF-C sources were inspected on 2026-09-13. None is
 integrated into the project; their reported learning and performance results
 remain unverified locally. These investigations support the existing gates:
 
@@ -212,6 +212,18 @@ and interpolated flight. Its
 uses writing speed to drive displayed motor-neuron activity; that display does
 not prove those neurons caused the movement. These animations do not replace
 our neural-command-to-physical-actuator checks.
+
+**TMNF-C — inspected commit
+[eb6be04](https://github.com/adonis-singh/TMNF-C/tree/eb6be045970e1f490aa02b92b2b39c560782503a).**
+Its pathway audit is useful for checking bilateral anatomical support before
+interpreting directional readouts. Its separate mushroom-body learner and
+visual reflex driver provide experimental methods, with substantial differences
+from our full-graph FlyWire 630 model. The learner receives vehicle/route state;
+the visual driver uses engineered readouts, and replay modes can show neural
+activity while recorded commands control motion. See the
+[source review, reported results and reuse boundaries](tmnf-c-research.md).
+Apply the audit method to gate 1 first; learning and vision retain their existing
+place in the plan.
 
 Any reuse requires pinned code/data, dependency and license review, bounded
 isolated execution and the relevant numerical and behavioral comparisons.
