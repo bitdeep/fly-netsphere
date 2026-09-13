@@ -59,3 +59,12 @@ leitura motora, testar se sua saída realmente altera os atuadores e comparar
 com uma versão sem essa ligação. Só depois faria sentido exibir atividade
 neural sincronizada ao voo como parte do controlador. O atlas sozinho não
 fornece essa integração.
+
+## Possibilidade de método: fábrica de software com agentes
+
+Um texto público de dzhng descreve como construir um simulador de mosca com
+Codex e Astra: spikes desriskando mecânicas, exploração formal de incógnitas,
+spec com revisão adversária e um loop de implementação autônoma, revisado
+depois por um choices file. O resumo organizado e o mapeamento com a prática
+deste projeto estão em [ai-factory-codex-astra.md](ai-factory-codex-astra.md).
+Continua adiado: os gates do delivery plan têm prioridade.
