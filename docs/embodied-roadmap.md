@@ -36,22 +36,15 @@ again when needed. Uninterrupted flight is not the acceptance condition.
 
 ```mermaid
 flowchart LR
-  Sources["Finite apple / water"] --> Field["Local odor / moisture fields"]
-  Field --> Sensors["Samples at the moving antennae"]
-  Reserves["Energy / water deficit"] --> Encoding["Sensory and need encoding"]
-  Sensors --> Encoding
-  Encoding --> Brain["Persistent FlyWire 630 neural state"]
-  Brain --> Commands["Measured behavioral readouts"]
-  Commands --> Policy["Learned leg / wing controllers"]
-  Policy --> Body["Native physical motion"]
+  Sources["Food / water<br/>fields"] --> Sensors["Local senses<br/>and needs"]
+  Sensors --> Brain["FlyWire<br/>commands"]
+  Brain --> Policy["Learned<br/>motor control"]
+  Policy --> Body["Physical motion<br/>and feeding"]
+  Brain -->|MN9| Body
+  Body --> Intake["Finite intake<br/>and reserves"]
   Body --> Sensors
-  Body --> Contact["Mouth contact and MN9-driven feeding"]
-  Brain --> Contact
-  Sources --> Intake["Finite resource transfer"]
-  Contact --> Intake
   Intake --> Sources
-  Intake --> Reserves
-  Time["Executed physical time"] --> Reserves
+  Intake --> Sensors
 ```
 
 This is the **target architecture**, not the current runtime. Field equations,
